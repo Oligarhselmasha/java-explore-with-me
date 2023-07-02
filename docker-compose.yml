@@ -1,15 +1,48 @@
 version: '3.1'
 services:
   stats-server:
+    build: ./stat-service
+    image: docker_stat
+    container_name: docker_stat
     ports:
       - "9090:9090"
+    depends_on:
+          - stats-db
+    environment:
+      - DB_NAME=shareit
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - DB_HOST=db
+      - DB_PORT=5432
 
   stats-db:
     image: postgres:14-alpine
+    container_name: ewm_postgres_stat
+    ports:
+      - "6541:5432"
+    environment:
+      - POSTGRES_DB=ewm_stat
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
 
   ewm-service:
     ports:
       - "8080:8080"
+    depends_on:
+      - ewm-db
+    environment:
+      - DB_NAME=shareit
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - DB_HOST=db
+      - DB_PORT=5432
 
   ewm-db:
     image: postgres:14-alpine
+    container_name: ewm_postgres_main
+    ports:
+      - "6543:5434"
+    environment:
+      - POSTGRES_DB=ewm_stat
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
