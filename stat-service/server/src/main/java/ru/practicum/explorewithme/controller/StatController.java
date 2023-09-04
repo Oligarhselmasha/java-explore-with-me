@@ -19,7 +19,7 @@ public class StatController {
     public List<ViewStatsDto> getStats(@RequestParam() String start,
                                        @RequestParam() String end,
                                        @RequestParam(required = false) String uris,
-                                       @RequestParam(defaultValue = "false" ,required = false) Boolean unique) {
+                                       @RequestParam(defaultValue = "false", required = false) Boolean unique) {
         return statService.getStats(start, end, uris, unique);
     }
 
