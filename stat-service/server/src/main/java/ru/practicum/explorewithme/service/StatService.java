@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface StatService {
 
-    List<ViewStatsDto> getStats(Integer userId, String start, String end, String uris, String unique);
+    List<ViewStatsDto> getStats(String start, String end, String uris, Boolean unique);
 
-    EndpointHitDto createHit(Integer userId, EndpointHitDto endpointHitDto);
+    EndpointHitDto createHit(EndpointHitDto endpointHitDto);
 }

@@ -1,18 +1,18 @@
 package ru.practicum.explorewithme.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.EndpointHitDto;
 import ru.practicum.explorewithme.StatClient;
 import ru.practicum.explorewithme.ViewStatsDto;
-
-import lombok.RequiredArgsConstructor;
+import ru.practicum.explorewithme.entity.EndpointHit;
 import ru.practicum.explorewithme.mapper.EndpointMapper;
-import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.repository.StatRepository;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +23,28 @@ public class StatServiceImpl implements StatService {
     private final EndpointMapper endpointMapper;
 
     @Override
-    public List<ViewStatsDto> getStats(Integer userId, String start, String end, String uris, String unique) {
+    public List<ViewStatsDto> getStats(String start, String end, String uris, Boolean unique) {
         List<EndpointHit> endpoints = statRepository.findAll();
-//        List<EndpointHit> endpoints = statRepository.findAll();
+        if (uris != null) {
+            String[] urisMas = uris.split(",");
+            List<String> urisList = Arrays.stream(urisMas)
+                    .collect(Collectors.toList());
+            endpoints = endpoints.stream()
+                    .filter(endpointHit -> urisList.contains(endpointHit.getUri()))
+                    .collect(Collectors.toList());
+        }
+        if (unique) {
+            endpoints = endpoints.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+        }
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse(start, df);
+        LocalDateTime endTime = LocalDateTime.parse(end, df);
+        endpoints = endpoints.stream()
+                .filter(endpointHit -> endpointHit.getTimestamp().isAfter(startTime))
+                .filter(endpointHit -> endpointHit.getTimestamp().isBefore(endTime))
+                .collect(Collectors.toList());
         List<ViewStatsDto> viewStatsDtos = new ArrayList<>();
         Set<String> urisSet = new HashSet<>();
         endpoints.forEach(endpointHit -> urisSet.add(endpointHit.getUri()));
@@ -40,15 +59,18 @@ public class StatServiceImpl implements StatService {
                     .filter(endpointHit -> endpointHit.getApp().equals(viewStatsDto.getApp())).count();
             viewStatsDto.setHits(urisHit);
         }
-        statClient.getStats(userId, start, end, uris, unique);
-        return null;
+        List<ViewStatsDto> viewStatsDtosOut = viewStatsDtos.stream()
+                .sorted(Comparator.comparing(ViewStatsDto::getHits).reversed())
+                .collect(Collectors.toList());
+        statClient.getStats(start, end, uris, unique);
+        return viewStatsDtosOut;
     }
 
     @Override
-    public EndpointHitDto createHit(Integer userId, EndpointHitDto endpointHitDto) {
+    public EndpointHitDto createHit(EndpointHitDto endpointHitDto) {
         EndpointHit endpointHit = endpointMapper.toEndpointHit(endpointHitDto);
         statRepository.save(endpointHit);
-        statClient.crateHit(userId, endpointHitDto);
+        statClient.crateHit(endpointHitDto);
         return null;
     }
 }
