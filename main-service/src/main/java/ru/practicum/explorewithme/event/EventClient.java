@@ -12,6 +12,7 @@ import java.util.List;
 
 public class EventClient extends BaseClient {
     private static final String API_PREFIX = "/events";
+
     @Autowired
     public EventClient(@Value("${client.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
