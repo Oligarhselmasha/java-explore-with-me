@@ -3,7 +3,6 @@ package ru.practicum.explorewithme.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.EndpointHitDto;
-import ru.practicum.explorewithme.StatClient;
 import ru.practicum.explorewithme.ViewStatsDto;
 import ru.practicum.explorewithme.entity.EndpointHit;
 import ru.practicum.explorewithme.mapper.EndpointMapper;
