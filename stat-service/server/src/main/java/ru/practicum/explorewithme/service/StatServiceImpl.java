@@ -21,7 +21,6 @@ import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
 public class StatServiceImpl implements StatService {
 
     private final StatRepository statRepository;
-    private final StatClient statClient;
     private final EndpointMapper endpointMapper;
 
     @Override
