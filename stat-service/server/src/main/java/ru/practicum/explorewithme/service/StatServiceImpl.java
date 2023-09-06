@@ -14,6 +14,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
+
 @Service
 @RequiredArgsConstructor
 public class StatServiceImpl implements StatService {
@@ -38,7 +40,7 @@ public class StatServiceImpl implements StatService {
                     .distinct()
                     .collect(Collectors.toList());
         }
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateTime startTime = LocalDateTime.parse(start, df);
         LocalDateTime endTime = LocalDateTime.parse(end, df);
         endpoints = endpoints.stream()
@@ -59,19 +61,16 @@ public class StatServiceImpl implements StatService {
                     .filter(endpointHit -> endpointHit.getApp().equals(viewStatsDto.getApp())).count();
             viewStatsDto.setHits(urisHit);
         }
-        List<ViewStatsDto> viewStatsDtosOut = viewStatsDtos.stream()
+        return viewStatsDtos.stream()
                 .sorted(Comparator.comparing(ViewStatsDto::getHits).reversed())
                 .collect(Collectors.toList());
-        statClient.getStats(start, end, uris, unique);
-        return viewStatsDtosOut;
     }
 
     @Override
     public EndpointHitDto createHit(EndpointHitDto endpointHitDto) {
         EndpointHit endpointHit = endpointMapper.toEndpointHit(endpointHitDto);
         statRepository.save(endpointHit);
-        statClient.crateHit(endpointHitDto);
-        return null;
+        return endpointMapper.toEndpointHitDto(endpointHit);
     }
 }
 

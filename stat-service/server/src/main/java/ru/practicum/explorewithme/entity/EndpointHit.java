@@ -6,6 +6,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -39,9 +40,9 @@ public class EndpointHit {
 
         EndpointHit that = (EndpointHit) o;
 
-        if (app != null ? !app.equals(that.app) : that.app != null) return false;
-        if (uri != null ? !uri.equals(that.uri) : that.uri != null) return false;
-        return ip != null ? ip.equals(that.ip) : that.ip == null;
+        if (!Objects.equals(app, that.app)) return false;
+        if (!Objects.equals(uri, that.uri)) return false;
+        return Objects.equals(ip, that.ip);
     }
 
     @Override

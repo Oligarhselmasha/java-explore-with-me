@@ -8,13 +8,15 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import java.util.List;
+
 @Service
 public class StatClient extends BaseClient {
 
-    private static final String API_PREFIX = "/";
+    private static final String API_PREFIX = "/hit";
 
     @Autowired
-    public StatClient(@Value("${main-server.url}") String serverUrl, RestTemplateBuilder builder) {
+    public StatClient(@Value("${stat-client.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl + API_PREFIX))
@@ -23,12 +25,7 @@ public class StatClient extends BaseClient {
         );
     }
 
-
-    public ResponseEntity<Object> getStats(String start, String end, String uris, Boolean unique) {
-        return null;
-    }
-
-    public ResponseEntity<Object> crateHit(EndpointHitDto endpointHitDto) {
-        return null;
+    public ResponseEntity<Object> createHit(EndpointHitDto endpointHitDto) {
+        return post("/", endpointHitDto);
     }
 }

@@ -25,6 +25,7 @@ public class StatController {
 
     @PostMapping("/hit")
     public EndpointHitDto createHit(@Valid @RequestBody EndpointHitDto endpointHitDto) {
+//        return statClient.createHit(endpointHitDto);
         return statService.createHit(endpointHitDto);
     }
 }
