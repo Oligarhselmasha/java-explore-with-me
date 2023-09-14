@@ -1,8 +1,9 @@
-package ru.practicum.explorewithme;
+package ru.practicum.explorewithme.events;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.explorewithme.location.LocationDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -10,35 +11,32 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EventShortDto {
+public class NewEventDto {
     @NotBlank
     @NotNull
     private String annotation;
 
     @NotNull
-    private CategoryDto category;
+    private Long category;
 
-    @NotNull
-    private Integer hits;
-
-    private Long confirmedRequests;
+    private String description;
 
     @NotBlank
     @NotNull
     private String eventDate;
 
-    private Long id;
-
     @NotNull
-    private UserShortDto initiator;
+    private LocationDto location;
 
     @NotNull
     private Boolean paid;
 
+    private Integer participantLimit = 0;
+
+    private Boolean requestModeration;
+
     @NotBlank
     @NotNull
     private String title;
-
-    private Long views;
 
 }

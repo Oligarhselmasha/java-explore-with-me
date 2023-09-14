@@ -1,8 +1,11 @@
-package ru.practicum.explorewithme;
+package ru.practicum.explorewithme.events;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import ru.practicum.explorewithme.location.LocationDto;
+import ru.practicum.explorewithme.users.UserShortDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -34,7 +37,7 @@ public class EventFullDto {
     private UserShortDto initiator;
 
     @NotNull
-    private Location location;
+    private LocationDto location;
 
     @NotNull
     private Boolean paid;

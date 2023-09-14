@@ -2,11 +2,12 @@ package ru.practicum.explorewithme.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.explorewithme.EndpointHitDto;
-import ru.practicum.explorewithme.ViewStatsDto;
+import ru.practicum.explorewithme.StatClient;
 import ru.practicum.explorewithme.entity.EndpointHit;
 import ru.practicum.explorewithme.mapper.EndpointMapper;
 import ru.practicum.explorewithme.repository.StatRepository;
+import ru.practicum.explorewithme.stats.EndpointHitDto;
+import ru.practicum.explorewithme.stats.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,9 +19,8 @@ import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
 @Service
 @RequiredArgsConstructor
 public class StatServiceImpl implements StatService {
-
-    private final StatRepository statRepository;
     private final EndpointMapper endpointMapper;
+    private final StatRepository statRepository;
 
     @Override
     public List<ViewStatsDto> getStats(String start, String end, String uris, Boolean unique) {
