@@ -42,7 +42,7 @@ public class EventFullDto {
     @NotNull
     private Boolean paid;
 
-    private Integer participantLimit = 0;
+    private Integer participantLimit;
 
     private String publishedOn;
 

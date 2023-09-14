@@ -13,32 +13,24 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 public class UpdateEventUserRequest {
-    @NotBlank
-    @NotNull
+
     private String annotation;
 
-    @NotNull
     private CategoryDto category;
 
     private String description;
 
-    @NotBlank
-    @NotNull
     private String eventDate;
 
-    @NotNull
     private LocationDto location;
 
-    @NotNull
     private Boolean paid;
 
-    private Integer participantLimit = 0;
+    private Integer participantLimit;
 
     private Boolean requestModeration;
 
     private String stateAction;
 
-    @NotBlank
-    @NotNull
     private String title;
 }

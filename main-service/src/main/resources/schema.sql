@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS Events
 , annotation varchar(400)
 , confirmed_requests bigint
 , created_on timestamp
-, description varchar(200)
+, description varchar(1000)
 , event_date timestamp
 , paid boolean
 , participant_limit integer

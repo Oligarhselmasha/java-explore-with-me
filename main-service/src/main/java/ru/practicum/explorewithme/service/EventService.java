@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.StatClient;
 import ru.practicum.explorewithme.entity.*;
 import ru.practicum.explorewithme.events.*;
+import ru.practicum.explorewithme.exceptions.ConflictException;
+import ru.practicum.explorewithme.exceptions.MissingException;
+import ru.practicum.explorewithme.exceptions.UnCorrectableException;
 import ru.practicum.explorewithme.mapper.*;
 import ru.practicum.explorewithme.repository.*;
 import ru.practicum.explorewithme.requests.EventRequestStatusUpdateRequest;
@@ -43,8 +46,13 @@ public class EventService {
 
     public EventFullDto getEvent(Long id, String ip) {
         Event event = eventRepository.findById(id).orElseThrow();
+        if (!event.getState().getState().equals("PUBLISHED")) {
+            throw new MissingException("Event with id=" + id + " was not found");
+        }
+        event.setViews(event.getViews() + 1);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
-        statClient.createHit(makeHit(ip, id));
+        eventFullDto.setState(eventStateRepository.findById(event.getState().getId()).orElseThrow().getState());
+//        statClient.createHit(makeHit(ip, id));
         return eventFullDto;
     }
 
@@ -64,6 +72,9 @@ public class EventService {
             start = LocalDateTime.now();
         } else {
             start = LocalDateTime.parse(rangeStart, df);
+        }
+        if (start.isAfter(end)){
+            throw new UnCorrectableException ("Wrong dates.");
         }
         events = eventRepository.findAll();
         if (categories != null) {
@@ -129,8 +140,11 @@ public class EventService {
             Location location = locationRepository.save(locationMapper.fromDtoLocation(newEventDto.getLocation()));
             event.setLocation(location);
         }
+        event.setViews(0L);
         event.setState(eventState);
+        event.setConfirmedRequests(0L);
         event.setInitiator(user);
+        event.setCreatedOn(LocalDateTime.now());
         Event eventSaved = eventRepository.save(event);
         return eventMapper.toEventFullDto(eventSaved);
     }
@@ -139,7 +153,7 @@ public class EventService {
         User user = userRepository.findById(userId).orElseThrow();
         Event eventBefore = eventRepository.findById(eventId).orElseThrow();
         if (eventBefore.getState().getState().equals("PUBLISHED")) {
-            throw new RuntimeException();
+            throw new ConflictException("Only pending or canceled events can be changed");
         }
         if (updateEventUserRequest.getAnnotation() != null) {
             eventBefore.setAnnotation(updateEventUserRequest.getAnnotation());
@@ -172,11 +186,14 @@ public class EventService {
         if (updateEventUserRequest.getTitle() != null) {
             eventBefore.setTitle(updateEventUserRequest.getTitle());
         }
-//        if (updateEventUserRequest.getStateAction() != null) {
-//            eventBefore.setTitle(updateEventUserRequest.getTitle());
-//        }
-        Event eventAfter = eventRepository.save(eventBefore);
-        return eventMapper.toEventFullDto(eventAfter);
+        if (updateEventUserRequest.getStateAction() != null) {
+            if (updateEventUserRequest.getStateAction().equals("SEND_TO_REVIEW")) {
+                eventBefore.setState(eventStateRepository.findByState("PENDING"));
+            }
+        }
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(eventBefore));
+        eventFullDto.setState(eventStateRepository.findById(eventBefore.getState().getId()).orElseThrow().getState());
+        return eventFullDto;
     }
 
     public EventRequestStatusUpdateResult changeUsersEventRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
@@ -190,9 +207,14 @@ public class EventService {
         participationRequests.forEach(participationRequestRepository::save);
         List<ParticipationRequestDto> participationRequestDtos = new ArrayList<>();
         participationRequests.forEach(r -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(r)));
+        participationRequestDtos.forEach(p-> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
+        participationRequestDtos.forEach(p-> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
+        participationRequestDtos.forEach(p-> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
         EventRequestStatusUpdateResult eventRequestStatusUpdateResult = new EventRequestStatusUpdateResult();
         if (state.equals("CONFIRMED")) {
             eventRequestStatusUpdateResult.setConfirmedRequests(participationRequestDtos);
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            eventRepository.save(event);
         } else if (state.equals("REJECTED")) {
             eventRequestStatusUpdateResult.setRejectedRequests(participationRequestDtos);
         }
@@ -277,30 +299,56 @@ public class EventService {
 
     public List<EventFullDto> getEvents(Long[] users, String[] states, Long[] categories, String rangeStart, String rangeEnd, Integer from, Integer size) {
         List<EventFullDto> eventFullDtos = new ArrayList<>();
+        List<Long> usersIds = new ArrayList<>();
+        List<String> statesNames = new ArrayList<>();
+        List<Long> categoriesIds = new ArrayList<>();
         DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
-        LocalDateTime start = LocalDateTime.parse(rangeStart, df);
-        LocalDateTime end = LocalDateTime.parse(rangeEnd, df);
-        List<Long> usersIds = Arrays.stream(users).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        List<String> statesNames = Arrays.stream(states).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        List<Long> categoriesIds = Arrays.stream(categories).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        if (usersIds.isEmpty()) {
+        LocalDateTime start;
+        LocalDateTime end;
+        if (rangeStart != null) {
+            start = LocalDateTime.parse(rangeStart, df);
+        } else {
+            start = LocalDateTime.of(1900, 1, 1, 0, 0, 0);
+        }
+        if (rangeEnd != null) {
+            end = LocalDateTime.parse(rangeEnd, df);
+        } else {
+            end = LocalDateTime.of(2100, 1, 1, 0, 0, 0);
+        }
+        if (users != null) {
+            usersIds = Arrays.stream(users).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        } else {
             List<User> usersList = userRepository.findAll();
-            usersList.forEach(user -> usersIds.add(user.getId()));
+            List<Long> finalUsersIds = usersIds;
+            usersList.forEach(user -> finalUsersIds.add(user.getId()));
         }
-        if (statesNames.isEmpty()) {
+        if (states != null) {
+            statesNames = Arrays.stream(states).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        } else {
             List<EventState> eventsStatesList = eventStateRepository.findAll();
-            eventsStatesList.forEach(eventState -> statesNames.add(eventState.getState()));
+            List<String> finalStatesNames = statesNames;
+            eventsStatesList.forEach(eventState -> finalStatesNames.add(eventState.getState()));
         }
-        if (categoriesIds.isEmpty()) {
+        if (categories != null) {
+            categoriesIds = Arrays.stream(categories).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        } else {
             List<Category> categoryList = categoryRepository.findAll();
-            categoryList.forEach(category -> categoriesIds.add(category.getId()));
+            List<Long> finalCategoriesIds = categoriesIds;
+            categoryList.forEach(category -> finalCategoriesIds.add(category.getId()));
         }
+        List<Event> eventsAll = eventRepository.findAll();
         List<Event> events = eventRepository.findByInitiator_IdInAndState_StateInAndCategory_NameInAndEventDateAfterAndEventDateBeforeOrderByIdAsc(usersIds, statesNames, categoriesIds, start, end);
         if (events.size() <= size) {
             size = events.size();
         }
         events = new ArrayList<>(events).subList(from, size);
         events.forEach(event -> eventFullDtos.add(eventMapper.toEventFullDto(event)));
+        eventFullDtos.forEach(event -> event
+                .setState(eventRepository
+                        .findById(event.getId())
+                        .orElseThrow()
+                        .getState()
+                        .getState()));
         return eventFullDtos;
     }
 
@@ -348,7 +396,9 @@ public class EventService {
                 event.setState(eventStateRepository.findByState("CANCELED"));
             }
         }
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        eventFullDto.setState(eventStateRepository.findById(event.getState().getId()).orElseThrow().getState());
+        return eventFullDto;
     }
 
     public CategoryDto changeCategory(CategoryDto categoryDto, Long catId) {

@@ -14,6 +14,7 @@ public interface EventMapper {
     EventShortDto toEventShortDto(Event event);
 
     @Mapping(target = "state", ignore = true)
+    @Mapping(source = "eventDate", target = "eventDate", dateFormat = DATE_PATTERN)
     EventFullDto toEventFullDto(Event event);
 
     @Mapping(target = "category", ignore = true)

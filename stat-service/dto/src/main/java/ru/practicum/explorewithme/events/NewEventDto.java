@@ -19,6 +19,8 @@ public class NewEventDto {
     @NotNull
     private Long category;
 
+    @NotBlank
+    @NotNull
     private String description;
 
     @NotBlank
@@ -31,7 +33,7 @@ public class NewEventDto {
     @NotNull
     private Boolean paid;
 
-    private Integer participantLimit = 0;
+    private Integer participantLimit;
 
     private Boolean requestModeration;
 

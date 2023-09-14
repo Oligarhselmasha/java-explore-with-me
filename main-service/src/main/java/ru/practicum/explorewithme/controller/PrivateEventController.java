@@ -33,7 +33,7 @@ public class PrivateEventController {
 
     @PostMapping("/{userId}/events")
     public EventFullDto postNewEvent(@PathVariable("userId") Long userId,
-                                     @RequestBody NewEventDto newEventDto,
+                                     @Valid @RequestBody NewEventDto newEventDto,
                                      HttpServletRequest request
     ) {
         String ip = request.getRemoteAddr();
