@@ -1,6 +1,7 @@
 package ru.practicum.explorewithme.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.events.*;
 import ru.practicum.explorewithme.service.EventService;
@@ -20,12 +21,14 @@ public class AdminEventController {
     private final UserService userService;
 
     @PostMapping("/categories")
+    @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto postNewCategory(@Valid @RequestBody NewCategoryDto newCategoryDto
     ) {
         return eventService.postNewCategory(newCategoryDto);
     }
 
     @DeleteMapping("/categories/{catId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeCategory(@PathVariable("catId") Long catId) {
         eventService.removeCategory(catId);
     }
@@ -38,13 +41,13 @@ public class AdminEventController {
     }
 
     @GetMapping("/events")
-    public List<EventFullDto> getEvents(@RequestParam(required = false) Long[] users,
-                                        @RequestParam(required = false) String[] states,
-                                        @RequestParam(required = false) Long[] categories,
+    public List<EventFullDto> getEvents(@RequestParam(required = false) Long  users,
+                                        @RequestParam(required = false) String states,
+                                        @RequestParam(required = false) Long categories,
                                         @RequestParam(required = false) String rangeStart,
                                         @RequestParam(required = false) String rangeEnd,
-                                        @RequestParam(required = false) Integer from,
-                                        @RequestParam(required = false) Integer size) {
+                                        @RequestParam(required = false, defaultValue = "0") Integer from,
+                                        @RequestParam(required = false, defaultValue = "10") Integer size) {
         return eventService.getEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
@@ -57,30 +60,34 @@ public class AdminEventController {
 
     @GetMapping("/users")
     public List<UserDto> getUsers(@RequestParam(required = false) Long[] ids,
-                                  @RequestParam(required = false) Integer from,
-                                  @RequestParam(required = false) Integer size) {
+                                  @RequestParam(required = false, defaultValue = "0") Integer from,
+                                  @RequestParam(required = false, defaultValue = "10") Integer size) {
         return userService.getUsers(ids, from, size);
     }
 
     @PostMapping("/users")
+    @ResponseStatus(HttpStatus.CREATED)
     public UserDto postNewUser(@Valid @RequestBody NewUserRequest newUserRequest
     ) {
         return userService.postNewUser(newUserRequest);
     }
 
     @DeleteMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeUser(@PathVariable("userId") Long userId
     ) {
         userService.removeUser(userId);
     }
 
     @PostMapping("/compilations")
+    @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto postNewCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto
     ) {
         return eventService.postNewCompilation(newCompilationDto);
     }
 
     @DeleteMapping("/compilations/{compId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeCompilation(@PathVariable("compId") Long compId
     ) {
         eventService.removeCompilation(compId);

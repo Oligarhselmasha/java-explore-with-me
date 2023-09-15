@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS Category
 
 CREATE TABLE IF NOT EXISTS Users
 ( id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
-, email varchar(100)
-, name varchar(100)
+, email varchar(254)
+, name varchar(250)
 );
 
 CREATE TABLE IF NOT EXISTS Location
@@ -42,22 +42,22 @@ values
 CREATE TABLE IF NOT EXISTS Compilation
 ( id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 , Pinned boolean
-, title varchar(100)
+, title varchar(50)
 );
 
 
 CREATE TABLE IF NOT EXISTS Events
 ( id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
-, annotation varchar(400)
+, annotation varchar(2000)
 , confirmed_requests bigint
 , created_on timestamp
-, description varchar(1000)
+, description varchar(7000)
 , event_date timestamp
 , paid boolean
 , participant_limit integer
 , published_on timestamp
 , request_moderation boolean
-, title varchar(100)
+, title varchar(200)
 , views bigint
 , category_id bigint
 , user_id bigint

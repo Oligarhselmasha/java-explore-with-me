@@ -30,12 +30,16 @@ public class UserService {
 
     public List<UserDto> getUsers(Long[] ids, Integer from, Integer size) {
         List<UserDto> userDtos = new ArrayList<>();
-        List<Long> usersIds = Arrays.stream(ids).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-        if (usersIds.isEmpty()) {
-            List<User> usersList = userRepository.findAll();
-            usersList.forEach(user -> usersIds.add(user.getId()));
+        List<Long> usersIds = new ArrayList<>();
+        if (ids!=null){
+            usersIds = Arrays.stream(ids).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         }
-        List<User> users = userRepository.findByIdInOrderByIdAsc(usersIds);
+        else {
+            List<User> usersList = userRepository.findAll();
+            List<Long> finalUsersIds = usersIds;
+            usersList.forEach(user -> finalUsersIds.add(user.getId()));
+        }
+        List<User> users = userRepository.findByIdIn(usersIds);
         if (users.size() <= size) {
             size = users.size();
         }

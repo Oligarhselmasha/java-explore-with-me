@@ -1,6 +1,7 @@
 package ru.practicum.explorewithme.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.events.EventFullDto;
 import ru.practicum.explorewithme.events.EventShortDto;
@@ -32,6 +33,7 @@ public class PrivateEventController {
     }
 
     @PostMapping("/{userId}/events")
+    @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto postNewEvent(@PathVariable("userId") Long userId,
                                      @Valid @RequestBody NewEventDto newEventDto,
                                      HttpServletRequest request
@@ -75,6 +77,7 @@ public class PrivateEventController {
     }
 
     @PostMapping("/{userId}/requests")
+    @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto postUsersRequests(@PathVariable("userId") Long userId,
                                                      @RequestParam() Long eventId
     ) {
