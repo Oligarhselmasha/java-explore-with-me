@@ -554,13 +554,12 @@ public class EventService {
         EndpointHitDto endpointHitDto = new EndpointHitDto();
         endpointHitDto.setApp("ewm-main-service");
         endpointHitDto.setIp(ip);
-        String uri = "/events/";
+        String uri = "/events";
         if (id != null) {
-            uri += id;
+            uri = uri + "/" + id;
         }
         endpointHitDto.setUri(uri);
         endpointHitDto.setTimestamp(LocalDateTime.now().format(df));
         return endpointHitDto;
     }
-
 }
