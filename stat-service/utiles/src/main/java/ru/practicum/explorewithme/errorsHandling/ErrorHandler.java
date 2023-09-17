@@ -1,10 +1,10 @@
-package errorsHandling;
+package ru.practicum.explorewithme.errorsHandling;
 
-import exceptions.UnCorrectableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.explorewithme.exceptions.UnCorrectableException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -3,9 +3,9 @@ package ru.practicum.explorewithme.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.explorewithme.service.StatService;
 import ru.practicum.explorewithme.stats.EndpointHitDto;
 import ru.practicum.explorewithme.stats.ViewStatsDto;
-import ru.practicum.explorewithme.service.StatService;
 
 import javax.validation.Valid;
 import java.util.List;

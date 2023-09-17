@@ -1,9 +1,9 @@
 package ru.practicum.explorewithme.service;
 
-import exceptions.UnCorrectableException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.entity.EndpointHit;
+import ru.practicum.explorewithme.exceptions.UnCorrectableException;
 import ru.practicum.explorewithme.mapper.EndpointMapper;
 import ru.practicum.explorewithme.repository.StatRepository;
 import ru.practicum.explorewithme.stats.EndpointHitDto;

@@ -1,7 +1,6 @@
 package ru.practicum.explorewithme.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.*;
 
 import javax.persistence.*;

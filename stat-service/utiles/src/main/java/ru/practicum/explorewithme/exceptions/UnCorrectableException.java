@@ -1,4 +1,4 @@
-package exceptions;
+package ru.practicum.explorewithme.exceptions;
 
 public class UnCorrectableException extends RuntimeException {
 
