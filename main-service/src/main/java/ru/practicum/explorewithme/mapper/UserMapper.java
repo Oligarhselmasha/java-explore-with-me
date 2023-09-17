@@ -8,5 +8,6 @@ import ru.practicum.explorewithme.users.UserDto;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     UserDto toUserDto(User user);
+
     User fromNewUserRequest(NewUserRequest newUserRequest);
 }

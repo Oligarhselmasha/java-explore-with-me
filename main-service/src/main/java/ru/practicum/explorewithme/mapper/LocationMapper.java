@@ -6,5 +6,5 @@ import ru.practicum.explorewithme.location.LocationDto;
 
 @Mapper(componentModel = "spring")
 public interface LocationMapper {
-    Location fromDtoLocation (LocationDto locationDto);
+    Location fromDtoLocation(LocationDto locationDto);
 }

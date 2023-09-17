@@ -7,9 +7,9 @@ import ru.practicum.explorewithme.events.NewCategoryDto;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
-    CategoryDto toCategoryDto (Category category);
+    CategoryDto toCategoryDto(Category category);
 
-    Category toCategory (NewCategoryDto newCategoryDto);
+    Category toCategory(NewCategoryDto newCategoryDto);
 
-    Category toCategoryFromCategoryDto (CategoryDto categoryDto);
+    Category toCategoryFromCategoryDto(CategoryDto categoryDto);
 }

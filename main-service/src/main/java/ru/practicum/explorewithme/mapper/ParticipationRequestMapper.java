@@ -2,11 +2,7 @@ package ru.practicum.explorewithme.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.practicum.explorewithme.entity.Event;
 import ru.practicum.explorewithme.entity.ParticipationRequest;
-import ru.practicum.explorewithme.events.EventFullDto;
-import ru.practicum.explorewithme.events.EventShortDto;
-import ru.practicum.explorewithme.events.NewEventDto;
 import ru.practicum.explorewithme.requests.ParticipationRequestDto;
 
 import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;

@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.explorewithme.entity.EventState;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface EventStateRepository extends JpaRepository<EventState, Integer> {

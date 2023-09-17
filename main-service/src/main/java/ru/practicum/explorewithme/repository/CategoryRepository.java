@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.explorewithme.entity.Category;
-import ru.practicum.explorewithme.entity.Location;
 
 import java.util.List;
 import java.util.Optional;
