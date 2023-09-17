@@ -562,4 +562,5 @@ public class EventService {
         endpointHitDto.setTimestamp(LocalDateTime.now().format(df));
         return endpointHitDto;
     }
+
 }
