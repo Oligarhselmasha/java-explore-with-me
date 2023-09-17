@@ -550,6 +550,7 @@ public class EventService {
     }
 
     private EndpointHitDto makeHit(String ip, Long id) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
         EndpointHitDto endpointHitDto = new EndpointHitDto();
         endpointHitDto.setApp("ewm-main-service");
         endpointHitDto.setIp(ip);
@@ -558,6 +559,7 @@ public class EventService {
             uri += id;
         }
         endpointHitDto.setUri(uri);
+        endpointHitDto.setTimestamp(LocalDateTime.now().format(df));
         return endpointHitDto;
     }
 }
