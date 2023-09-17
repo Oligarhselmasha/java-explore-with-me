@@ -6,8 +6,6 @@ import lombok.Setter;
 import ru.practicum.explorewithme.events.CategoryDto;
 import ru.practicum.explorewithme.location.LocationDto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
