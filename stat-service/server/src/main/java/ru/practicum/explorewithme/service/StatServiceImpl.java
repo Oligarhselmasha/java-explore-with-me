@@ -40,6 +40,9 @@ public class StatServiceImpl implements StatService {
         DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateTime startTime = LocalDateTime.parse(start, df);
         LocalDateTime endTime = LocalDateTime.parse(end, df);
+        if (startTime.isAfter(endTime)){
+            throw new RuntimeException();
+        }
         endpoints = endpoints.stream()
                 .filter(endpointHit -> endpointHit.getTimestamp().isAfter(startTime))
                 .filter(endpointHit -> endpointHit.getTimestamp().isBefore(endTime))
