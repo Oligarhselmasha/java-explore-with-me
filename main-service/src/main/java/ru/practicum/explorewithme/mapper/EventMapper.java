@@ -11,6 +11,7 @@ import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
 
 @Mapper(componentModel = "spring")
 public interface EventMapper {
+    @Mapping(source = "eventDate", target = "eventDate", dateFormat = DATE_PATTERN)
     EventShortDto toEventShortDto(Event event);
 
     @Mapping(target = "state", ignore = true)

@@ -44,24 +44,24 @@ public class EventController {
 
     @GetMapping("/compilations")
     public List<CompilationDto> getCompilations(@RequestParam(defaultValue = "false") Boolean pinned,
-                                          @RequestParam(defaultValue = "0") Integer from,
-                                          @RequestParam(defaultValue = "10") Integer size) {
+                                                @RequestParam(defaultValue = "0") Integer from,
+                                                @RequestParam(defaultValue = "10") Integer size) {
         return eventService.getCompilations(pinned, from, size);
     }
 
     @GetMapping("/compilations/{compId}")
-    public CompilationDto getCompilation(@PathVariable("id") Long compId) {
+    public CompilationDto getCompilation(@PathVariable("compId") Long compId) {
         return eventService.getCompilation(compId);
     }
 
     @GetMapping("/categories")
     public List<CategoryDto> getCategories(@RequestParam(defaultValue = "0") Integer from,
-                                     @RequestParam(defaultValue = "10") Integer size) {
+                                           @RequestParam(defaultValue = "10") Integer size) {
         return eventService.getCategories(from, size);
     }
 
     @GetMapping("/categories/{catId}")
-    public CategoryDto getCategorie(@PathVariable("id") Long catId) {
+    public CategoryDto getCategorie(@PathVariable("catId") Long catId) {
         return eventService.getCategorie(catId);
     }
 }

@@ -9,10 +9,13 @@ import ru.practicum.explorewithme.events.EventShortDto;
 import ru.practicum.explorewithme.events.NewEventDto;
 import ru.practicum.explorewithme.requests.ParticipationRequestDto;
 
+import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
+
 @Mapper(componentModel = "spring")
 public interface ParticipationRequestMapper {
     @Mapping(target = "event", ignore = true)
     @Mapping(target = "requester", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(source = "created", target = "created", dateFormat = DATE_PATTERN)
     ParticipationRequestDto toParticipationRequestDto(ParticipationRequest participationRequest);
 }

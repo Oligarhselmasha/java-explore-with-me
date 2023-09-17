@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.explorewithme.exceptions.ConflictException;
 import ru.practicum.explorewithme.exceptions.MissingException;
 import ru.practicum.explorewithme.exceptions.UnCorrectableException;
-import ru.practicum.explorewithme.exceptions.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class ParticipationRequestDto {
+
     private String created;
 
     private Long event;

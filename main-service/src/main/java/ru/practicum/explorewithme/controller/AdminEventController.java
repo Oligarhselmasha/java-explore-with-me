@@ -41,7 +41,7 @@ public class AdminEventController {
     }
 
     @GetMapping("/events")
-    public List<EventFullDto> getEvents(@RequestParam(required = false) Long  users,
+    public List<EventFullDto> getEvents(@RequestParam(required = false) Long users,
                                         @RequestParam(required = false) String states,
                                         @RequestParam(required = false) Long categories,
                                         @RequestParam(required = false) String rangeStart,

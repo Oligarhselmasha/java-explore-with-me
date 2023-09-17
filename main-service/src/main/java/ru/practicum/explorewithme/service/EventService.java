@@ -52,7 +52,7 @@ public class EventService {
         event.setViews(event.getViews() + 1);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         eventFullDto.setState(eventStateRepository.findById(event.getState().getId()).orElseThrow().getState());
-//        statClient.createHit(makeHit(ip, id));
+        statClient.createHit(makeHit(ip, id));
         return eventFullDto;
     }
 
@@ -98,7 +98,7 @@ public class EventService {
         }
         events = new ArrayList<>(events).subList(from, size);
         events.forEach(event -> eventShortDtos.add(eventMapper.toEventShortDto(event)));
-//        statClient.createHit(makeHit(ip, null));
+        statClient.createHit(makeHit(ip, null));
         return eventShortDtos;
     }
 
@@ -143,13 +143,13 @@ public class EventService {
             Location location = locationRepository.save(locationMapper.fromDtoLocation(newEventDto.getLocation()));
             event.setLocation(location);
         }
-        if (newEventDto.getPaid() == null){
+        if (newEventDto.getPaid() == null) {
             event.setPaid(false);
         }
-        if (newEventDto.getParticipantLimit() == null){
+        if (newEventDto.getParticipantLimit() == null) {
             event.setParticipantLimit(0);
         }
-        if (newEventDto.getRequestModeration() == null){
+        if (newEventDto.getRequestModeration() == null) {
             event.setRequestModeration(true);
         }
         event.setViews(0L);
@@ -158,7 +158,9 @@ public class EventService {
         event.setInitiator(user);
         event.setCreatedOn(LocalDateTime.now());
         Event eventSaved = eventRepository.save(event);
-        return eventMapper.toEventFullDto(eventSaved);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventSaved);
+        eventFullDto.setState("PENDING");
+        return eventFullDto;
     }
 
     public EventFullDto changeUsersEvent(Long userId, Long eventId, @Valid UpdateEventUserRequest updateEventUserRequest) {
@@ -205,6 +207,9 @@ public class EventService {
             if (updateEventUserRequest.getStateAction().equals("SEND_TO_REVIEW")) {
                 eventBefore.setState(eventStateRepository.findByState("PENDING"));
             }
+            if (updateEventUserRequest.getStateAction().equals("CANCEL_REVIEW")) {
+                eventBefore.setState(eventStateRepository.findByState("CANCELED"));
+            }
         }
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(eventBefore));
         eventFullDto.setState(eventStateRepository.findById(eventBefore.getState().getId()).orElseThrow().getState());
@@ -218,19 +223,29 @@ public class EventService {
         List<ParticipationRequest> participationRequests = new ArrayList<>();
         List<Long> reqIds = eventRequestStatusUpdateRequest.getRequestIds();
         reqIds.forEach(r -> participationRequests.add(participationRequestRepository.findByIdAndEvent_Initiator_Id(r, userId)));
-        participationRequests.forEach(r -> r.setStatus(eventStateRepository.findByState(state)));
-        participationRequests.forEach(participationRequestRepository::save);
         List<ParticipationRequestDto> participationRequestDtos = new ArrayList<>();
         participationRequests.forEach(r -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(r)));
-        participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
-        participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
         EventRequestStatusUpdateResult eventRequestStatusUpdateResult = new EventRequestStatusUpdateResult();
         if (state.equals("CONFIRMED")) {
+            if (participationRequestDtos.size() > event.getParticipantLimit() - event.getConfirmedRequests()) {
+                throw new ConflictException("Out of limit.");
+            }
+            event.setConfirmedRequests(event.getConfirmedRequests() + participationRequestDtos.size());
+            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState("CONFIRMED")));
+            participationRequests.forEach(participationRequestRepository::save);
+            participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
+            participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
+            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
             eventRequestStatusUpdateResult.setConfirmedRequests(participationRequestDtos);
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-            eventRepository.save(event);
         } else if (state.equals("REJECTED")) {
+            if (participationRequestRepository.findByIdInAndStatus_State(eventRequestStatusUpdateRequest.getRequestIds(), "CONFIRMED").size() > 0) {
+                throw new ConflictException("Already confirmed");
+            }
+            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState("REJECTED")));
+            participationRequests.forEach(participationRequestRepository::save);
+            participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
+            participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
+            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
             eventRequestStatusUpdateResult.setRejectedRequests(participationRequestDtos);
         }
         return eventRequestStatusUpdateResult;
@@ -242,6 +257,9 @@ public class EventService {
         Event event = eventRepository.findById(eventId).orElseThrow();
         List<ParticipationRequest> participationRequests = participationRequestRepository.findByEvent_Id(event.getId());
         participationRequests.forEach(p -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(p)));
+        participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
+        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
+        participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
         return participationRequestDtos;
     }
 
@@ -251,6 +269,9 @@ public class EventService {
         List<ParticipationRequestDto> participationRequestDtos = new ArrayList<>();
         List<ParticipationRequest> participationRequests = participationRequestRepository.findByRequester_Id(userId);
         participationRequests.forEach(r -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(r)));
+        participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
+        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
+        participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
         return participationRequestDtos;
     }
 
@@ -259,18 +280,40 @@ public class EventService {
         Event event = eventRepository.findById(eventId).orElseThrow();
         ParticipationRequest participationRequestOld = participationRequestRepository.findByEvent_IdAndRequester_Id(eventId, userId);
         if (participationRequestOld != null) {
-            throw new RuntimeException();
+            throw new ConflictException("Request already exist.");
+        }
+        if (Objects.equals(event.getInitiator().getId(), userId)) {
+            throw new ConflictException("Request from initiator.");
+        }
+        if (!Objects.equals(event.getState().getState(), "PUBLISHED")) {
+            throw new ConflictException("Its not published event.");
+        }
+        if (event.getParticipantLimit() != 0 && participationRequestRepository.findByEvent_IdAndStatus_State(eventId, "CONFIRMED").size() == event.getParticipantLimit()) {
+            throw new ConflictException("Participation limit has been reached.");
         }
         ParticipationRequest participationRequestNew = new ParticipationRequest();
         participationRequestNew.setRequester(user);
         participationRequestNew.setEvent(event);
-        participationRequestNew.setStatus(eventStateRepository.findByState("CONFIRMED"));
-        participationRequestNew.setCreated(LocalDateTime.now());
+        if (event.getParticipantLimit() != 0) {
+            if (event.getRequestModeration()) {
+                participationRequestNew.setStatus(eventStateRepository.findByState("PENDING"));
+                participationRequestNew.setCreated(LocalDateTime.now());
+            } else {
+                participationRequestNew.setStatus(eventStateRepository.findByState("CONFIRMED"));
+                participationRequestNew.setCreated(LocalDateTime.now());
+                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            }
+        } else {
+            participationRequestNew.setStatus(eventStateRepository.findByState("CONFIRMED"));
+            participationRequestNew.setCreated(LocalDateTime.now());
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+        }
+        eventRepository.save(event);
         ParticipationRequest participationRequestSaved = participationRequestRepository.save(participationRequestNew);
         ParticipationRequestDto participationRequestDto = participationRequestMapper.toParticipationRequestDto(participationRequestSaved);
         participationRequestDto.setEvent(eventId);
         participationRequestDto.setRequester(userId);
-        participationRequestDto.setStatus("CONFIRMED");
+        participationRequestDto.setStatus(eventStateRepository.findByState(participationRequestSaved.getStatus().getState()).getState());
         return participationRequestDto;
     }
 
@@ -280,9 +323,13 @@ public class EventService {
         if (!Objects.equals(participationRequest.getRequester().getId(), userId)) {
             throw new RuntimeException();
         }
-        participationRequest.setStatus(eventStateRepository.findByState("PENDING"));
+        participationRequest.setStatus(eventStateRepository.findByState("CANCELED"));
         ParticipationRequest participationRequestNew = participationRequestRepository.save(participationRequest);
-        return participationRequestMapper.toParticipationRequestDto(participationRequestNew);
+        ParticipationRequestDto participationRequestDto = participationRequestMapper.toParticipationRequestDto(participationRequestNew);
+        participationRequestDto.setRequester(userId);
+        participationRequestDto.setEvent(participationRequestNew.getEvent().getId());
+        participationRequestDto.setStatus("CANCELED");
+        return participationRequestDto;
     }
 
     public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
@@ -302,7 +349,8 @@ public class EventService {
     }
 
     public CategoryDto getCategorie(Long catId) {
-        return categoryMapper.toCategoryDto(categoryRepository.findById(catId).orElseThrow());
+        return categoryMapper.toCategoryDto(categoryRepository.findById(catId)
+                .orElseThrow(() -> new MissingException("Not found category")));
     }
 
     public List<CategoryDto> getCategories(Integer from, Integer size) {
@@ -415,9 +463,16 @@ public class EventService {
         }
         if (updateEventAdminRequest.getStateAction() != null) {
             if (Objects.equals(updateEventAdminRequest.getStateAction(), "PUBLISH_EVENT")) {
-                event.setState(eventStateRepository.findByState("PUBLISHED"));
-                event.setPublishedOn(publicationDate);
+                if (Objects.equals(event.getState().getState(), "PENDING")) {
+                    event.setState(eventStateRepository.findByState("PUBLISHED"));
+                    event.setPublishedOn(publicationDate);
+                } else {
+                    throw new ConflictException("Its not pending event.");
+                }
             } else if (Objects.equals(updateEventAdminRequest.getStateAction(), "REJECT_EVENT")) {
+                if (Objects.equals(event.getState().getState(), "PUBLISHED")) {
+                    throw new ConflictException("Its already published.");
+                }
                 event.setState(eventStateRepository.findByState("CANCELED"));
             }
         }
@@ -432,7 +487,7 @@ public class EventService {
         List<String> names = new ArrayList<>();
         categories.forEach(category -> names.add(category.getName()));
         if (names.contains(name) && !Objects.equals(categoryRepository.findByName(name).getId(), catId)) {
-            throw new RuntimeException();
+            throw new ConflictException("category already exist");
         }
         Category category = categoryRepository.findById(catId).orElseThrow();
         category.setName(name);
@@ -442,7 +497,7 @@ public class EventService {
     public void removeCategory(Long catId) {
         List<Event> events = eventRepository.findByCategory_Id(catId);
         if (!events.isEmpty()) {
-            throw new RuntimeException();
+            throw new ConflictException("This category contains events");
         }
         categoryRepository.deleteById(catId);
     }
@@ -453,7 +508,7 @@ public class EventService {
         List<String> names = new ArrayList<>();
         categories.forEach(category -> names.add(category.getName()));
         if (names.contains(name)) {
-            throw new RuntimeException();
+            throw new ConflictException("category already exist");
         }
         Category category = categoryMapper.toCategory(newCategoryDto);
         CategoryDto afterSave = categoryMapper.toCategoryDto(categoryRepository.save(category));
@@ -461,7 +516,7 @@ public class EventService {
     }
 
     public CompilationDto postNewCompilation(NewCompilationDto newCompilationDto) {
-        if (newCompilationDto.getPinned()==null){
+        if (newCompilationDto.getPinned() == null) {
             newCompilationDto.setPinned(false);
         }
         List<Long> ids = newCompilationDto.getEvents();
@@ -476,7 +531,7 @@ public class EventService {
     public CompilationDto changeCompilation(UpdateCompilationRequest updateCompilationRequest, Long compId) {
         List<Long> eventsIds = new ArrayList<>();
         Compilation compilation = compilationRepository.findById(compId).orElseThrow();
-        if (updateCompilationRequest.getEvents() != null){
+        if (updateCompilationRequest.getEvents() != null) {
             eventsIds = Arrays.stream(updateCompilationRequest.getEvents()).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
             List<Event> events = eventRepository.findByIdIn(eventsIds);
             compilation.setEvents(events);
@@ -505,6 +560,4 @@ public class EventService {
         endpointHitDto.setUri(uri);
         return endpointHitDto;
     }
-
-
 }
