@@ -10,8 +10,8 @@ import java.util.List;
 @Entity
 @Table(name = "Compilation")
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

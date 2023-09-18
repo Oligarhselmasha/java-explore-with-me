@@ -22,9 +22,6 @@ public interface ParticipationRequestRepository extends JpaRepository<Participat
     @Query("select p from ParticipationRequest p where p.event.id = :id")
     List<ParticipationRequest> findByEvent_Id(@Param("id") Long id);
 
-    @Query("select p from ParticipationRequest p where p.event.id = :id and p.event.state.state = :state")
-    List<ParticipationRequest> findByEvent_IdAndEvent_State_State(@Param("id") Long id, @Param("state") String state);
-
     @Override
     Optional<ParticipationRequest> findById(Long aLong);
 

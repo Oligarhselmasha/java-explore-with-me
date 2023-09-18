@@ -5,8 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.explorewithme.events.CategoryDto;
-import ru.practicum.explorewithme.events.CompilationDto;
 import ru.practicum.explorewithme.events.EventFullDto;
 import ru.practicum.explorewithme.events.EventShortDto;
 import ru.practicum.explorewithme.service.EventService;
@@ -16,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class EventController {
+public class PublicEventController {
 
     private final EventService eventService;
 
@@ -40,28 +38,5 @@ public class EventController {
                                  HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         return eventService.getEvent(id, ip);
-    }
-
-    @GetMapping("/compilations")
-    public List<CompilationDto> getCompilations(@RequestParam(defaultValue = "false") Boolean pinned,
-                                                @RequestParam(defaultValue = "0") Integer from,
-                                                @RequestParam(defaultValue = "10") Integer size) {
-        return eventService.getCompilations(pinned, from, size);
-    }
-
-    @GetMapping("/compilations/{compId}")
-    public CompilationDto getCompilation(@PathVariable("compId") Long compId) {
-        return eventService.getCompilation(compId);
-    }
-
-    @GetMapping("/categories")
-    public List<CategoryDto> getCategories(@RequestParam(defaultValue = "0") Integer from,
-                                           @RequestParam(defaultValue = "10") Integer size) {
-        return eventService.getCategories(from, size);
-    }
-
-    @GetMapping("/categories/{catId}")
-    public CategoryDto getCategorie(@PathVariable("catId") Long catId) {
-        return eventService.getCategorie(catId);
     }
 }

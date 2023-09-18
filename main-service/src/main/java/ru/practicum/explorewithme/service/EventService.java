@@ -8,11 +8,11 @@ import ru.practicum.explorewithme.events.*;
 import ru.practicum.explorewithme.exceptions.ConflictException;
 import ru.practicum.explorewithme.exceptions.MissingException;
 import ru.practicum.explorewithme.exceptions.UnCorrectableException;
-import ru.practicum.explorewithme.mapper.*;
+import ru.practicum.explorewithme.mapper.CategoryMapper;
+import ru.practicum.explorewithme.mapper.CompilationMapper;
+import ru.practicum.explorewithme.mapper.EventMapper;
+import ru.practicum.explorewithme.mapper.LocationMapper;
 import ru.practicum.explorewithme.repository.*;
-import ru.practicum.explorewithme.requests.EventRequestStatusUpdateRequest;
-import ru.practicum.explorewithme.requests.EventRequestStatusUpdateResult;
-import ru.practicum.explorewithme.requests.ParticipationRequestDto;
 import ru.practicum.explorewithme.requests.UpdateEventUserRequest;
 import ru.practicum.explorewithme.stats.EndpointHitDto;
 
@@ -36,9 +36,8 @@ public class EventService {
     private final EventMapper eventMapper;
     private final CompilationMapper compilationMapper;
     private final CategoryMapper categoryMapper;
-
     private final LocationMapper locationMapper;
-    private final ParticipationRequestMapper participationRequestMapper;
+
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestRepository participationRequestRepository;
     private final LocationRepository locationRepository;
@@ -58,7 +57,7 @@ public class EventService {
 
     public List<EventShortDto> getEvents(String text, Long[] categories, Boolean paid, String rangeStart, String rangeEnd,
                                          Boolean onlyAvailable, String sort, Integer from, Integer size, String ip) {
-        List<Event> events = new ArrayList<>();
+        List<Event> events;
         List<EventShortDto> eventShortDtos = new ArrayList<>();
         DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateTime start;
@@ -102,11 +101,10 @@ public class EventService {
         return eventShortDtos;
     }
 
-    public List<EventShortDto> getUsersEvents(Long userId, Integer from, Integer size, String ip) {
-        User user = userRepository.findById(userId).orElseThrow();
+    public List<EventShortDto> getUsersEvents(Long userId, Integer from, Integer size) {
+        userRepository.findById(userId).orElseThrow();
         List<EventShortDto> eventShortDtoList = new ArrayList<>();
         List<Event> events = eventRepository.findByInitiator_IdOrderByIdAsc(userId);
-        List<Event> eventsAll = eventRepository.findAll();
         if (!events.isEmpty()) {
             List<EventShortDto> sortedEventShortDtoList;
             events.forEach(event -> eventShortDtoList.add(eventMapper.toEventShortDto(event)));
@@ -121,8 +119,8 @@ public class EventService {
         return eventShortDtoList;
     }
 
-    public EventFullDto getUsersEvent(Long userId, Long eventId, String ip) {
-        User user = userRepository.findById(userId).orElseThrow();
+    public EventFullDto getUsersEvent(Long userId, Long eventId) {
+        userRepository.findById(userId).orElseThrow();
         Event event = eventRepository.findById(eventId).orElseThrow();
         if (!Objects.equals(event.getInitiator().getId(), userId)) {
             throw new RuntimeException();
@@ -130,7 +128,7 @@ public class EventService {
         return eventMapper.toEventFullDto(event);
     }
 
-    public EventFullDto postNewUsersEvent(Long userId, NewEventDto newEventDto, String ip) {
+    public EventFullDto postNewUsersEvent(Long userId, NewEventDto newEventDto) {
         User user = userRepository.findById(userId).orElseThrow();
         Category category = categoryRepository.findById(newEventDto.getCategory()).orElseThrow();
         Event event = eventMapper.toEvent(newEventDto);
@@ -164,7 +162,7 @@ public class EventService {
     }
 
     public EventFullDto changeUsersEvent(Long userId, Long eventId, @Valid UpdateEventUserRequest updateEventUserRequest) {
-        User user = userRepository.findById(userId).orElseThrow();
+        userRepository.findById(userId).orElseThrow();
         Event eventBefore = eventRepository.findById(eventId).orElseThrow();
         if (eventBefore.getState().getState().equals("PUBLISHED")) {
             throw new ConflictException("Only pending or canceled events can be changed");
@@ -214,122 +212,6 @@ public class EventService {
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(eventBefore));
         eventFullDto.setState(eventStateRepository.findById(eventBefore.getState().getId()).orElseThrow().getState());
         return eventFullDto;
-    }
-
-    public EventRequestStatusUpdateResult changeUsersEventRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Event event = eventRepository.findById(eventId).orElseThrow();
-        String state = eventRequestStatusUpdateRequest.getStatus();
-        List<ParticipationRequest> participationRequests = new ArrayList<>();
-        List<Long> reqIds = eventRequestStatusUpdateRequest.getRequestIds();
-        reqIds.forEach(r -> participationRequests.add(participationRequestRepository.findByIdAndEvent_Initiator_Id(r, userId)));
-        List<ParticipationRequestDto> participationRequestDtos = new ArrayList<>();
-        participationRequests.forEach(r -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(r)));
-        EventRequestStatusUpdateResult eventRequestStatusUpdateResult = new EventRequestStatusUpdateResult();
-        if (state.equals("CONFIRMED")) {
-            if (participationRequestDtos.size() > event.getParticipantLimit() - event.getConfirmedRequests()) {
-                throw new ConflictException("Out of limit.");
-            }
-            event.setConfirmedRequests(event.getConfirmedRequests() + participationRequestDtos.size());
-            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState("CONFIRMED")));
-            participationRequests.forEach(participationRequestRepository::save);
-            participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
-            participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
-            eventRequestStatusUpdateResult.setConfirmedRequests(participationRequestDtos);
-        } else if (state.equals("REJECTED")) {
-            if (participationRequestRepository.findByIdInAndStatus_State(eventRequestStatusUpdateRequest.getRequestIds(), "CONFIRMED").size() > 0) {
-                throw new ConflictException("Already confirmed");
-            }
-            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState("REJECTED")));
-            participationRequests.forEach(participationRequestRepository::save);
-            participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
-            participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
-            eventRequestStatusUpdateResult.setRejectedRequests(participationRequestDtos);
-        }
-        return eventRequestStatusUpdateResult;
-    }
-
-    public List<ParticipationRequestDto> getUsersEventRequests(Long userId, Long eventId) {
-        List<ParticipationRequestDto> participationRequestDtos = new ArrayList<>();
-        User user = userRepository.findById(userId).orElseThrow();
-        Event event = eventRepository.findById(eventId).orElseThrow();
-        List<ParticipationRequest> participationRequests = participationRequestRepository.findByEvent_Id(event.getId());
-        participationRequests.forEach(p -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(p)));
-        participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
-        participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
-        return participationRequestDtos;
-    }
-
-
-    public List<ParticipationRequestDto> getUsersRequests(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        List<ParticipationRequestDto> participationRequestDtos = new ArrayList<>();
-        List<ParticipationRequest> participationRequests = participationRequestRepository.findByRequester_Id(userId);
-        participationRequests.forEach(r -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(r)));
-        participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
-        participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
-        return participationRequestDtos;
-    }
-
-    public ParticipationRequestDto postUsersRequests(Long userId, Long eventId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Event event = eventRepository.findById(eventId).orElseThrow();
-        ParticipationRequest participationRequestOld = participationRequestRepository.findByEvent_IdAndRequester_Id(eventId, userId);
-        if (participationRequestOld != null) {
-            throw new ConflictException("Request already exist.");
-        }
-        if (Objects.equals(event.getInitiator().getId(), userId)) {
-            throw new ConflictException("Request from initiator.");
-        }
-        if (!Objects.equals(event.getState().getState(), "PUBLISHED")) {
-            throw new ConflictException("Its not published event.");
-        }
-        if (event.getParticipantLimit() != 0 && participationRequestRepository.findByEvent_IdAndStatus_State(eventId, "CONFIRMED").size() == event.getParticipantLimit()) {
-            throw new ConflictException("Participation limit has been reached.");
-        }
-        ParticipationRequest participationRequestNew = new ParticipationRequest();
-        participationRequestNew.setRequester(user);
-        participationRequestNew.setEvent(event);
-        if (event.getParticipantLimit() != 0) {
-            if (event.getRequestModeration()) {
-                participationRequestNew.setStatus(eventStateRepository.findByState("PENDING"));
-                participationRequestNew.setCreated(LocalDateTime.now());
-            } else {
-                participationRequestNew.setStatus(eventStateRepository.findByState("CONFIRMED"));
-                participationRequestNew.setCreated(LocalDateTime.now());
-                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-            }
-        } else {
-            participationRequestNew.setStatus(eventStateRepository.findByState("CONFIRMED"));
-            participationRequestNew.setCreated(LocalDateTime.now());
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-        }
-        eventRepository.save(event);
-        ParticipationRequest participationRequestSaved = participationRequestRepository.save(participationRequestNew);
-        ParticipationRequestDto participationRequestDto = participationRequestMapper.toParticipationRequestDto(participationRequestSaved);
-        participationRequestDto.setEvent(eventId);
-        participationRequestDto.setRequester(userId);
-        participationRequestDto.setStatus(eventStateRepository.findByState(participationRequestSaved.getStatus().getState()).getState());
-        return participationRequestDto;
-    }
-
-    public ParticipationRequestDto cancelUsersRequests(Long userId, Long requestId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        ParticipationRequest participationRequest = participationRequestRepository.findById(requestId).orElseThrow();
-        if (!Objects.equals(participationRequest.getRequester().getId(), userId)) {
-            throw new RuntimeException();
-        }
-        participationRequest.setStatus(eventStateRepository.findByState("CANCELED"));
-        ParticipationRequest participationRequestNew = participationRequestRepository.save(participationRequest);
-        ParticipationRequestDto participationRequestDto = participationRequestMapper.toParticipationRequestDto(participationRequestNew);
-        participationRequestDto.setRequester(userId);
-        participationRequestDto.setEvent(participationRequestNew.getEvent().getId());
-        participationRequestDto.setStatus("CANCELED");
-        return participationRequestDto;
     }
 
     public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
@@ -386,24 +268,20 @@ public class EventService {
             usersIds.add(users);
         } else {
             List<User> usersList = userRepository.findAll();
-            List<Long> finalUsersIds = usersIds;
-            usersList.forEach(user -> finalUsersIds.add(user.getId()));
+            usersList.forEach(user -> usersIds.add(user.getId()));
         }
         if (states != null) {
             statesNames.add(states);
         } else {
             List<EventState> eventsStatesList = eventStateRepository.findAll();
-            List<String> finalStatesNames = statesNames;
-            eventsStatesList.forEach(eventState -> finalStatesNames.add(eventState.getState()));
+            eventsStatesList.forEach(eventState -> statesNames.add(eventState.getState()));
         }
         if (categories != null) {
             categoriesIds.add(categories);
         } else {
             List<Category> categoryList = categoryRepository.findAll();
-            List<Long> finalCategoriesIds = categoriesIds;
-            categoryList.forEach(category -> finalCategoriesIds.add(category.getId()));
+            categoryList.forEach(category -> categoriesIds.add(category.getId()));
         }
-        List<Event> eventsAll = eventRepository.findAll();
         List<Event> events = eventRepository.findByInitiator_IdInAndState_StateInAndCategory_NameInAndEventDateAfterAndEventDateBeforeOrderByIdAsc(usersIds, statesNames, categoriesIds, start, end);
         if (events.size() <= size) {
             size = events.size();
@@ -479,74 +357,6 @@ public class EventService {
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
         eventFullDto.setState(eventStateRepository.findById(event.getState().getId()).orElseThrow().getState());
         return eventFullDto;
-    }
-
-    public CategoryDto changeCategory(CategoryDto categoryDto, Long catId) {
-        String name = categoryDto.getName();
-        List<Category> categories = categoryRepository.findAll();
-        List<String> names = new ArrayList<>();
-        categories.forEach(category -> names.add(category.getName()));
-        if (names.contains(name) && !Objects.equals(categoryRepository.findByName(name).getId(), catId)) {
-            throw new ConflictException("category already exist");
-        }
-        Category category = categoryRepository.findById(catId).orElseThrow();
-        category.setName(name);
-        return categoryMapper.toCategoryDto(categoryRepository.save(category));
-    }
-
-    public void removeCategory(Long catId) {
-        List<Event> events = eventRepository.findByCategory_Id(catId);
-        if (!events.isEmpty()) {
-            throw new ConflictException("This category contains events");
-        }
-        categoryRepository.deleteById(catId);
-    }
-
-    public CategoryDto postNewCategory(NewCategoryDto newCategoryDto) {
-        String name = newCategoryDto.getName();
-        List<Category> categories = categoryRepository.findAll();
-        List<String> names = new ArrayList<>();
-        categories.forEach(category -> names.add(category.getName()));
-        if (names.contains(name)) {
-            throw new ConflictException("category already exist");
-        }
-        Category category = categoryMapper.toCategory(newCategoryDto);
-        CategoryDto afterSave = categoryMapper.toCategoryDto(categoryRepository.save(category));
-        return afterSave;
-    }
-
-    public CompilationDto postNewCompilation(NewCompilationDto newCompilationDto) {
-        if (newCompilationDto.getPinned() == null) {
-            newCompilationDto.setPinned(false);
-        }
-        List<Long> ids = newCompilationDto.getEvents();
-        List<Event> events = eventRepository.findByIdIn(ids);
-        Compilation compilation = new Compilation();
-        compilation.setEvents(events);
-        compilation.setTitle(newCompilationDto.getTitle());
-        compilation.setPinned(newCompilationDto.getPinned());
-        return compilationMapper.toCompilationDto(compilationRepository.save(compilation));
-    }
-
-    public CompilationDto changeCompilation(UpdateCompilationRequest updateCompilationRequest, Long compId) {
-        List<Long> eventsIds = new ArrayList<>();
-        Compilation compilation = compilationRepository.findById(compId).orElseThrow();
-        if (updateCompilationRequest.getEvents() != null) {
-            eventsIds = Arrays.stream(updateCompilationRequest.getEvents()).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-            List<Event> events = eventRepository.findByIdIn(eventsIds);
-            compilation.setEvents(events);
-        }
-        if (updateCompilationRequest.getPinned() != null) {
-            compilation.setPinned(updateCompilationRequest.getPinned());
-        }
-        if (updateCompilationRequest.getTitle() != null) {
-            compilation.setTitle(updateCompilationRequest.getTitle());
-        }
-        return compilationMapper.toCompilationDto(compilationRepository.save(compilation));
-    }
-
-    public void removeCompilation(Long compId) {
-        compilationRepository.deleteById(compId);
     }
 
     private EndpointHitDto makeHit(String ip, Long id) {

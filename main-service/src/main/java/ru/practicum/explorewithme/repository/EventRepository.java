@@ -11,25 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
-    @Query("select e from Event e where e.category.id in :ids")
-    List<Event> findByCategory_IdIn(@Param("ids") Collection<Long> ids);
-
-    @Query("select e from Event e where e.category.id in :ids and e.paid = :paid")
-    List<Event> findByCategory_IdInAndPaid(@Param("ids") Collection<Long> ids, @Param("paid") Boolean paid);
-
-    @Query("select e from Event e " +
-            "where e.category.id in :ids and e.paid = :paid and e.eventDate > :eventDate and e.eventDate < :eventDate1 " +
-            "order by e.eventDate")
-    List<Event> findByCategory_IdInAndPaidAndEventDateAfterAndEventDateBeforeOrderByEventDateAsc(@Param("ids") Collection<Long> ids, @Param("paid") Boolean paid, @Param("eventDate") LocalDateTime eventDate, @Param("eventDate1") LocalDateTime eventDate1);
-
-    @Query("select e from Event e " +
-            "where e.category.id in :ids and e.paid = :paid and e.eventDate > :eventDate and e.eventDate < :eventDate1 " +
-            "order by e.views")
-    List<Event> findByCategory_IdInAndPaidAndEventDateAfterAndEventDateBeforeOrderByViewsAsc(@Param("ids") Collection<Long> ids, @Param("paid") Boolean paid, @Param("eventDate") LocalDateTime eventDate, @Param("eventDate1") LocalDateTime eventDate1);
-
-
-    @Query("select e from Event e where e.paid = :paid")
-    List<Event> findByPaid(@Param("paid") Boolean paid);
 
     @Query("select e from Event e where e.id in :ids")
     List<Event> findByIdIn(@Param("ids") Collection<Long> ids);

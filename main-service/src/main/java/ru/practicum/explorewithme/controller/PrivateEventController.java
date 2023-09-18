@@ -6,9 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.events.EventFullDto;
 import ru.practicum.explorewithme.events.EventShortDto;
 import ru.practicum.explorewithme.events.NewEventDto;
-import ru.practicum.explorewithme.requests.EventRequestStatusUpdateRequest;
-import ru.practicum.explorewithme.requests.EventRequestStatusUpdateResult;
-import ru.practicum.explorewithme.requests.ParticipationRequestDto;
 import ru.practicum.explorewithme.requests.UpdateEventUserRequest;
 import ru.practicum.explorewithme.service.EventService;
 
@@ -28,8 +25,7 @@ public class PrivateEventController {
                                               @RequestParam(defaultValue = "0", required = false) Integer from,
                                               @RequestParam(defaultValue = "10", required = false) Integer size,
                                               HttpServletRequest request) {
-        String ip = request.getRemoteAddr();
-        return eventService.getUsersEvents(userId, from, size, ip);
+        return eventService.getUsersEvents(userId, from, size);
     }
 
     @PostMapping("/{userId}/events")
@@ -38,16 +34,14 @@ public class PrivateEventController {
                                      @Valid @RequestBody NewEventDto newEventDto,
                                      HttpServletRequest request
     ) {
-        String ip = request.getRemoteAddr();
-        return eventService.postNewUsersEvent(userId, newEventDto, ip);
+        return eventService.postNewUsersEvent(userId, newEventDto);
     }
 
     @GetMapping("/{userId}/events/{eventId}")
     public EventFullDto getUsersEvent(@PathVariable("userId") Long userId,
                                       @PathVariable("eventId") Long eventId,
                                       HttpServletRequest request) {
-        String ip = request.getRemoteAddr();
-        return eventService.getUsersEvent(userId, eventId, ip);
+        return eventService.getUsersEvent(userId, eventId);
     }
 
     @PatchMapping("/{userId}/events/{eventId}")
@@ -56,38 +50,5 @@ public class PrivateEventController {
                                          @Valid @RequestBody UpdateEventUserRequest updateEventUserRequest
     ) {
         return eventService.changeUsersEvent(userId, eventId, updateEventUserRequest);
-    }
-
-    @GetMapping("/{userId}/events/{eventId}/requests")
-    public List<ParticipationRequestDto> getUsersEventRequests(@PathVariable("userId") Long userId,
-                                                               @PathVariable("eventId") Long eventId) {
-        return eventService.getUsersEventRequests(userId, eventId);
-    }
-
-    @PatchMapping("/{userId}/events/{eventId}/requests")
-    public EventRequestStatusUpdateResult changeUsersEventRequests(@PathVariable("userId") Long userId,
-                                                                   @PathVariable("eventId") Long eventId,
-                                                                   @Valid @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
-        return eventService.changeUsersEventRequests(userId, eventId, eventRequestStatusUpdateRequest);
-    }
-
-    @GetMapping("/{userId}/requests")
-    public List<ParticipationRequestDto> getUsersRequests(@PathVariable("userId") Long userId) {
-        return eventService.getUsersRequests(userId);
-    }
-
-    @PostMapping("/{userId}/requests")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationRequestDto postUsersRequests(@PathVariable("userId") Long userId,
-                                                     @RequestParam() Long eventId
-    ) {
-        return eventService.postUsersRequests(userId, eventId);
-    }
-
-    @PatchMapping("/{userId}/requests/{requestId}/cancel")
-    public ParticipationRequestDto cancelUsersRequests(@PathVariable("userId") Long userId,
-                                                       @PathVariable("requestId") Long requestId
-    ) {
-        return eventService.cancelUsersRequests(userId, requestId);
     }
 }
