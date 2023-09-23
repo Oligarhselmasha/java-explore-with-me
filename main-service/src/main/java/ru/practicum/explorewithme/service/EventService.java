@@ -46,7 +46,6 @@ public class EventService {
         if (!event.getState().getState().equals(Status.PUBLISHED)) {
             throw new MissingException("Event with id=" + id + " was not found");
         }
-//        event.setViews(event.getViews() + 1);
         statService.makeHit(ip, id);
         Long views = statService.getStats(id);
         event.setViews(views);

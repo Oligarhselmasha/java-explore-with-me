@@ -40,6 +40,6 @@ public class StatClient extends BaseClient {
                 "end", df.format(MAX_DATE),
                 "uris", "/events/" + id
         );
-        return get("/stats/", parameters);
+        return get("/stats?end={end}&start={start}&uris={uris}", parameters);
     }
 }

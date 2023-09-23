@@ -1,16 +1,17 @@
 package ru.practicum.explorewithme.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.StatClient;
 import ru.practicum.explorewithme.stats.EndpointHitDto;
-import ru.practicum.explorewithme.stats.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
-import static ru.practicum.explorewithme.variables.Constants.*;
+import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +34,11 @@ public class StatService {
     }
 
     public Long getStats(Long id) {
-        List<ViewStatsDto> list = (List<ViewStatsDto>) statClient.getStats(id);
-        return (long) list.get(0).getHits();
+        ResponseEntity<Object> response = statClient.getStats(id);
+        Object body = response.getBody();
+        ArrayList<LinkedHashMap<Object, Object>> ll = (ArrayList<LinkedHashMap<Object, Object>>) body;
+        assert ll != null;
+        int a = (Integer) ll.get(0).get("hits");
+        return (long) a;
     }
 }
