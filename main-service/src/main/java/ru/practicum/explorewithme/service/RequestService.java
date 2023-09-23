@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.practicum.explorewithme.variables.Status.*;
+
 @Service
 @RequiredArgsConstructor
 public class RequestService {
@@ -39,22 +41,22 @@ public class RequestService {
         List<ParticipationRequestDto> participationRequestDtos = new ArrayList<>();
         participationRequests.forEach(r -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(r)));
         EventRequestStatusUpdateResult eventRequestStatusUpdateResult = new EventRequestStatusUpdateResult();
-        if (state.equals("CONFIRMED")) {
+        if (state.equals(CONFIRMED.name())) {
             if (participationRequestDtos.size() > event.getParticipantLimit() - event.getConfirmedRequests()) {
                 throw new ConflictException("Out of limit.");
             }
             event.setConfirmedRequests(event.getConfirmedRequests() + participationRequestDtos.size());
-            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState("CONFIRMED")));
+            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState(CONFIRMED.name())));
             participationRequests.forEach(participationRequestRepository::save);
             participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
             participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
             participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState().name()));
             eventRequestStatusUpdateResult.setConfirmedRequests(participationRequestDtos);
-        } else if (state.equals("REJECTED")) {
-            if (participationRequestRepository.findByIdInAndStatus_State(eventRequestStatusUpdateRequest.getRequestIds(), "CONFIRMED").size() > 0) {
+        } else if (state.equals(REJECTED.name())) {
+            if (participationRequestRepository.findByIdInAndStatus_State(eventRequestStatusUpdateRequest.getRequestIds(), CONFIRMED.name()).size() > 0) {
                 throw new ConflictException("Already confirmed");
             }
-            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState("REJECTED")));
+            participationRequests.forEach(p -> p.setStatus(eventStateRepository.findByState(REJECTED.name())));
             participationRequests.forEach(participationRequestRepository::save);
             participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
             participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
@@ -98,10 +100,10 @@ public class RequestService {
         if (Objects.equals(event.getInitiator().getId(), userId)) {
             throw new ConflictException("Request from initiator.");
         }
-        if (!Objects.equals(event.getState().getState(), "PUBLISHED")) {
+        if (!Objects.equals(event.getState().getState(), PUBLISHED)) {
             throw new ConflictException("Its not published event.");
         }
-        if (event.getParticipantLimit() != 0 && participationRequestRepository.findByEvent_IdAndStatus_State(eventId, "CONFIRMED").size() == event.getParticipantLimit()) {
+        if (event.getParticipantLimit() != 0 && participationRequestRepository.findByEvent_IdAndStatus_State(eventId, CONFIRMED.name()).size() == event.getParticipantLimit()) {
             throw new ConflictException("Participation limit has been reached.");
         }
         ParticipationRequest participationRequestNew = new ParticipationRequest();
@@ -109,15 +111,15 @@ public class RequestService {
         participationRequestNew.setEvent(event);
         if (event.getParticipantLimit() != 0) {
             if (event.getRequestModeration()) {
-                participationRequestNew.setStatus(eventStateRepository.findByState("PENDING"));
+                participationRequestNew.setStatus(eventStateRepository.findByState(PENDING.name()));
                 participationRequestNew.setCreated(LocalDateTime.now());
             } else {
-                participationRequestNew.setStatus(eventStateRepository.findByState("CONFIRMED"));
+                participationRequestNew.setStatus(eventStateRepository.findByState(CONFIRMED.name()));
                 participationRequestNew.setCreated(LocalDateTime.now());
                 event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             }
         } else {
-            participationRequestNew.setStatus(eventStateRepository.findByState("CONFIRMED"));
+            participationRequestNew.setStatus(eventStateRepository.findByState(CONFIRMED.name()));
             participationRequestNew.setCreated(LocalDateTime.now());
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
         }
@@ -136,12 +138,12 @@ public class RequestService {
         if (!Objects.equals(participationRequest.getRequester().getId(), userId)) {
             throw new RuntimeException();
         }
-        participationRequest.setStatus(eventStateRepository.findByState("CANCELED"));
+        participationRequest.setStatus(eventStateRepository.findByState(CANCELED.name()));
         ParticipationRequest participationRequestNew = participationRequestRepository.save(participationRequest);
         ParticipationRequestDto participationRequestDto = participationRequestMapper.toParticipationRequestDto(participationRequestNew);
         participationRequestDto.setRequester(userId);
         participationRequestDto.setEvent(participationRequestNew.getEvent().getId());
-        participationRequestDto.setStatus("CANCELED");
+        participationRequestDto.setStatus(CANCELED.name());
         return participationRequestDto;
     }
 }
