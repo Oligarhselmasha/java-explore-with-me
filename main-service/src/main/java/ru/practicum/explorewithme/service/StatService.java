@@ -36,9 +36,9 @@ public class StatService {
     public Long getStats(Long id) {
         ResponseEntity<Object> response = statClient.getStats(id);
         Object body = response.getBody();
-        ArrayList<LinkedHashMap<Object, Object>> ll = (ArrayList<LinkedHashMap<Object, Object>>) body;
-        assert ll != null;
-        int a = (Integer) ll.get(0).get("hits");
+        ArrayList<LinkedHashMap<Object, Object>> responseList = (ArrayList<LinkedHashMap<Object, Object>>) body;
+        assert responseList != null;
+        int a = (Integer) responseList.get(0).get("hits");
         return (long) a;
     }
 }
