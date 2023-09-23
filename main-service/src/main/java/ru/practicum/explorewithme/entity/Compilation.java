@@ -24,8 +24,9 @@ public class Compilation {
     private String title;
 
     @ManyToMany
-    @JoinColumn(name = "event_id")
-    @ToString.Exclude
-    private List<Event> events;
+    @JoinTable(name = "Compilation_events",
+            joinColumns = @JoinColumn(name = "Compilation_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "Events_id", referencedColumnName = "id"))
+    private List<Event> events = new java.util.ArrayList<>();
 
 }
