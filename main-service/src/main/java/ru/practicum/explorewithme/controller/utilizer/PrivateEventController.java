@@ -9,7 +9,6 @@ import ru.practicum.explorewithme.events.NewEventDto;
 import ru.practicum.explorewithme.requests.UpdateEventUserRequest;
 import ru.practicum.explorewithme.service.EventService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
