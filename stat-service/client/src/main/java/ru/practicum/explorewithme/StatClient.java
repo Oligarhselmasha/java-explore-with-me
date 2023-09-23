@@ -38,8 +38,9 @@ public class StatClient extends BaseClient {
         Map<String, Object> parameters = Map.of(
                 "start", df.format(MIN_DATE),
                 "end", df.format(MAX_DATE),
-                "uris", "/events/" + id
+                "uris", "/events/" + id,
+                "unique", true
         );
-        return get("/stats?end={end}&start={start}&uris={uris}", parameters);
+        return get("/stats?end={end}&start={start}&uris={uris}&unique={unique}", parameters);
     }
 }
