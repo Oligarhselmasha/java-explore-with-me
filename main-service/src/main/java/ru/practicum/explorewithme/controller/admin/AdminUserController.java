@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.controller;
+package ru.practicum.explorewithme.controller.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ public class AdminUserController {
     private final UserService userService;
 
     @GetMapping("/users")
-    public List<UserDto> getUsers(@RequestParam(required = false) Long[] ids,
+    public List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
                                   @RequestParam(required = false, defaultValue = "0") Integer from,
                                   @RequestParam(required = false, defaultValue = "10") Integer size) {
         return userService.getUsers(ids, from, size);

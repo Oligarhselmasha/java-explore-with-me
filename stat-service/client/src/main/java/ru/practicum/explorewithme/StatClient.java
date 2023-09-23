@@ -9,23 +9,37 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.explorewithme.stats.EndpointHitDto;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+import static ru.practicum.explorewithme.variables.Constants.*;
+
 
 @Service
 public class StatClient extends BaseClient {
 
-    private static final String API_PREFIX = "/hit";
 
     @Autowired
     public StatClient(@Value("${client.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl + API_PREFIX))
+                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                         .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                         .build()
         );
     }
 
     public ResponseEntity<Object> createHit(EndpointHitDto endpointHitDto) {
-        return post("/", endpointHitDto);
+        return post("/hit/", endpointHitDto);
+    }
+
+    public ResponseEntity<Object> getStats(Long id) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        Map<String, Object> parameters = Map.of(
+                "start", df.format(MIN_DATE),
+                "end", df.format(MAX_DATE),
+                "uris", "/events/" + id
+        );
+        return get("/stats/", parameters);
     }
 }

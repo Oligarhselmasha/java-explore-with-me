@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.controller;
+package ru.practicum.explorewithme.controller.utilizer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,24 +23,21 @@ public class PrivateEventController {
     @GetMapping("/{userId}/events")
     public List<EventShortDto> getUsersEvents(@PathVariable("userId") Long userId,
                                               @RequestParam(defaultValue = "0", required = false) Integer from,
-                                              @RequestParam(defaultValue = "10", required = false) Integer size,
-                                              HttpServletRequest request) {
+                                              @RequestParam(defaultValue = "10", required = false) Integer size) {
         return eventService.getUsersEvents(userId, from, size);
     }
 
     @PostMapping("/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto postNewEvent(@PathVariable("userId") Long userId,
-                                     @Valid @RequestBody NewEventDto newEventDto,
-                                     HttpServletRequest request
+                                     @Valid @RequestBody NewEventDto newEventDto
     ) {
         return eventService.postNewUsersEvent(userId, newEventDto);
     }
 
     @GetMapping("/{userId}/events/{eventId}")
     public EventFullDto getUsersEvent(@PathVariable("userId") Long userId,
-                                      @PathVariable("eventId") Long eventId,
-                                      HttpServletRequest request) {
+                                      @PathVariable("eventId") Long eventId) {
         return eventService.getUsersEvent(userId, eventId);
     }
 

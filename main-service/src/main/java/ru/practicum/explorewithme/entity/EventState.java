@@ -1,6 +1,7 @@
 package ru.practicum.explorewithme.entity;
 
 import lombok.*;
+import ru.practicum.explorewithme.variables.Status;
 
 import javax.persistence.*;
 
@@ -17,6 +18,7 @@ public class EventState {
     private Integer id;
 
     @Column
-    private String state;
+    @Enumerated(EnumType.STRING)
+    private Status state;
 
 }

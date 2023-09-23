@@ -9,9 +9,7 @@ import ru.practicum.explorewithme.repository.UserRepository;
 import ru.practicum.explorewithme.users.NewUserRequest;
 import ru.practicum.explorewithme.users.UserDto;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,15 +30,15 @@ public class UserService {
         return userMapper.toUserDto(userRepository.save(user));
     }
 
-    public List<UserDto> getUsers(Long[] ids, Integer from, Integer size) {
+    public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
         List<UserDto> userDtos = new ArrayList<>();
-        List<Long> usersIds = new ArrayList<>();
+        Set<Long> usersIds = new HashSet<>();
         if (ids != null) {
-            usersIds = Arrays.stream(ids).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            usersIds.addAll(ids);
         } else {
-            List<User> usersList = userRepository.findAll();
-            List<Long> finalUsersIds = usersIds;
-            usersList.forEach(user -> finalUsersIds.add(user.getId()));
+            Set<User> usersList = getSetUsers();
+            usersList.stream()
+                    .forEach(user -> usersIds.add(user.getId()));
         }
         List<User> users = userRepository.findByIdIn(usersIds);
         if (users.size() <= size) {
@@ -49,5 +47,9 @@ public class UserService {
         users = new ArrayList<>(users).subList(from, size);
         users.forEach(user -> userDtos.add(userMapper.toUserDto(user)));
         return userDtos;
+    }
+
+    private Set<User> getSetUsers() {
+        return new HashSet<>(userRepository.findAll());
     }
 }

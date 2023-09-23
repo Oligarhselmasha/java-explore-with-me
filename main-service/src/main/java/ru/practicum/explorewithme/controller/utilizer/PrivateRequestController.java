@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.controller;
+package ru.practicum.explorewithme.controller.utilizer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

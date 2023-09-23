@@ -48,7 +48,7 @@ public class RequestService {
             participationRequests.forEach(participationRequestRepository::save);
             participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
             participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
+            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState().name()));
             eventRequestStatusUpdateResult.setConfirmedRequests(participationRequestDtos);
         } else if (state.equals("REJECTED")) {
             if (participationRequestRepository.findByIdInAndStatus_State(eventRequestStatusUpdateRequest.getRequestIds(), "CONFIRMED").size() > 0) {
@@ -58,7 +58,7 @@ public class RequestService {
             participationRequests.forEach(participationRequestRepository::save);
             participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
             participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
+            participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState().name()));
             eventRequestStatusUpdateResult.setRejectedRequests(participationRequestDtos);
         }
         return eventRequestStatusUpdateResult;
@@ -71,7 +71,7 @@ public class RequestService {
         List<ParticipationRequest> participationRequests = participationRequestRepository.findByEvent_Id(event.getId());
         participationRequests.forEach(p -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(p)));
         participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
+        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState().name()));
         participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
         return participationRequestDtos;
     }
@@ -83,7 +83,7 @@ public class RequestService {
         List<ParticipationRequest> participationRequests = participationRequestRepository.findByRequester_Id(userId);
         participationRequests.forEach(r -> participationRequestDtos.add(participationRequestMapper.toParticipationRequestDto(r)));
         participationRequestDtos.forEach(p -> p.setRequester(participationRequestRepository.findById(p.getId()).orElseThrow().getRequester().getId()));
-        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState()));
+        participationRequestDtos.forEach(p -> p.setStatus(participationRequestRepository.findById(p.getId()).orElseThrow().getStatus().getState().name()));
         participationRequestDtos.forEach(p -> p.setEvent(participationRequestRepository.findById(p.getId()).orElseThrow().getEvent().getId()));
         return participationRequestDtos;
     }
@@ -126,7 +126,7 @@ public class RequestService {
         ParticipationRequestDto participationRequestDto = participationRequestMapper.toParticipationRequestDto(participationRequestSaved);
         participationRequestDto.setEvent(eventId);
         participationRequestDto.setRequester(userId);
-        participationRequestDto.setStatus(eventStateRepository.findByState(participationRequestSaved.getStatus().getState()).getState());
+        participationRequestDto.setStatus(eventStateRepository.findByState(participationRequestSaved.getStatus().getState().name()).getState().name());
         return participationRequestDto;
     }
 

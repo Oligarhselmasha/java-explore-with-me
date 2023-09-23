@@ -11,9 +11,10 @@ import ru.practicum.explorewithme.mapper.CategoryMapper;
 import ru.practicum.explorewithme.repository.CategoryRepository;
 import ru.practicum.explorewithme.repository.EventRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +26,7 @@ public class CategoryService {
 
     public CategoryDto changeCategory(CategoryDto categoryDto, Long catId) {
         String name = categoryDto.getName();
-        List<Category> categories = categoryRepository.findAll();
-        List<String> names = new ArrayList<>();
-        categories.forEach(category -> names.add(category.getName()));
+        Set<String> names = getSetNames();
         if (names.contains(name) && !Objects.equals(categoryRepository.findByName(name).getId(), catId)) {
             throw new ConflictException("category already exist");
         }
@@ -46,13 +45,17 @@ public class CategoryService {
 
     public CategoryDto postNewCategory(NewCategoryDto newCategoryDto) {
         String name = newCategoryDto.getName();
-        List<Category> categories = categoryRepository.findAll();
-        List<String> names = new ArrayList<>();
-        categories.forEach(category -> names.add(category.getName()));
+        Set<String> names = getSetNames();
         if (names.contains(name)) {
             throw new ConflictException("category already exist");
         }
         Category category = categoryMapper.toCategory(newCategoryDto);
         return categoryMapper.toCategoryDto(categoryRepository.save(category));
+    }
+
+    private Set<String> getSetNames() {
+        return categoryRepository.findAll().stream()
+                .map(Category::getName)
+                .collect(Collectors.toSet());
     }
 }

@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.controller;
+package ru.practicum.explorewithme.controller.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +17,9 @@ public class AdminEventController {
     private final EventService eventService;
 
     @GetMapping("/events")
-    public List<EventFullDto> getEvents(@RequestParam(required = false) Long users,
-                                        @RequestParam(required = false) String states,
-                                        @RequestParam(required = false) Long categories,
+    public List<EventFullDto> getEvents(@RequestParam(required = false) List<Long> users,
+                                        @RequestParam(required = false) List<String> states,
+                                        @RequestParam(required = false) List<Long> categories,
                                         @RequestParam(required = false) String rangeStart,
                                         @RequestParam(required = false) String rangeEnd,
                                         @RequestParam(required = false, defaultValue = "0") Integer from,

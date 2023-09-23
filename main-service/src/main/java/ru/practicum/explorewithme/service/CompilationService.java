@@ -36,10 +36,9 @@ public class CompilationService {
     }
 
     public CompilationDto changeCompilation(UpdateCompilationRequest updateCompilationRequest, Long compId) {
-        List<Long> eventsIds;
         Compilation compilation = compilationRepository.findById(compId).orElseThrow();
         if (updateCompilationRequest.getEvents() != null) {
-            eventsIds = Arrays.stream(updateCompilationRequest.getEvents()).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            List<Long> eventsIds = Arrays.stream(updateCompilationRequest.getEvents()).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
             List<Event> events = eventRepository.findByIdIn(eventsIds);
             compilation.setEvents(events);
         }
@@ -54,5 +53,21 @@ public class CompilationService {
 
     public void removeCompilation(Long compId) {
         compilationRepository.deleteById(compId);
+    }
+
+    public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
+        List<CompilationDto> compilationDtos = new ArrayList<>();
+        List<Compilation> compilations = compilationRepository.findByPinned(pinned);
+        if (compilations.size() <= size) {
+            size = compilations.size();
+        }
+        compilations = new ArrayList<>(compilations).subList(from, size);
+        compilations.forEach(c -> compilationDtos.add(compilationMapper.toCompilationDto(c)));
+        return compilationDtos;
+    }
+
+    public CompilationDto getCompilation(Long compId) {
+        Compilation compilation = compilationRepository.findById(compId).orElseThrow();
+        return compilationMapper.toCompilationDto(compilation);
     }
 }
