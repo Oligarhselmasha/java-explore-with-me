@@ -46,12 +46,12 @@ public class EventService {
         if (!event.getState().getState().equals(Status.PUBLISHED)) {
             throw new MissingException("Event with id=" + id + " was not found");
         }
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
-        eventFullDto.setState(eventStateRepository.findById(event.getState().getId()).orElseThrow().getState().name());
+//        event.setViews(event.getViews() + 1);
         statService.makeHit(ip, id);
         Long views = statService.getStats(id);
         event.setViews(views);
-//        event.setViews(event.getViews() + 1);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
+        eventFullDto.setState(eventStateRepository.findById(event.getState().getId()).orElseThrow().getState().name());
         return eventFullDto;
     }
 
@@ -139,7 +139,7 @@ public class EventService {
             throw new UnCorrectableException("Wrong date.");
         }
         event.setCategory(category);
-        EventState eventState = eventStateRepository.findByState(PENDING.name());
+        EventState eventState = eventStateRepository.findByState(PENDING);
         if (newEventDto.getLocation() != null) {
             Location location = locationRepository.save(locationMapper.fromDtoLocation(newEventDto.getLocation()));
             event.setLocation(location);
@@ -206,10 +206,10 @@ public class EventService {
         }
         if (updateEventUserRequest.getStateAction() != null) {
             if (updateEventUserRequest.getStateAction().equals(SEND_TO_REVIEW.name())) {
-                eventBefore.setState(eventStateRepository.findByState(PENDING.name()));
+                eventBefore.setState(eventStateRepository.findByState(PENDING));
             }
             if (updateEventUserRequest.getStateAction().equals(CANCEL_REVIEW.name())) {
-                eventBefore.setState(eventStateRepository.findByState(CANCELED.name()));
+                eventBefore.setState(eventStateRepository.findByState(CANCELED));
             }
         }
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(eventBefore));
@@ -236,7 +236,7 @@ public class EventService {
     public List<EventFullDto> getEvents(List<Long> users, List<String> states, List<Long> categories, String rangeStart, String rangeEnd, Integer from, Integer size) {
         List<EventFullDto> eventFullDtos = new ArrayList<>();
         Set<Long> usersIds = new HashSet<>();
-        Set<String> statesNames = new HashSet<>();
+        Set<Status> statesNames = new HashSet<>();
         Set<Long> categoriesIds = new HashSet<>();
         DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
         LocalDateTime start;
@@ -259,11 +259,12 @@ public class EventService {
                     .forEach(user -> usersIds.add(user.getId()));
         }
         if (states != null) {
-            statesNames.addAll(states);
+            states.stream()
+                    .forEach(s -> statesNames.add(Status.valueOf(s)));
         } else {
             Set<EventState> eventSet = getSetStates();
             eventSet.stream()
-                    .forEach(eventState -> statesNames.add(eventState.getState().name()));
+                    .forEach(eventState -> statesNames.add(eventState.getState()));
         }
         if (categories != null) {
             categoriesIds.addAll(categories);
@@ -332,7 +333,7 @@ public class EventService {
         if (updateEventAdminRequest.getStateAction() != null) {
             if (Objects.equals(updateEventAdminRequest.getStateAction(), PUBLISH_EVENT.name())) {
                 if (Objects.equals(event.getState().getState(), PENDING)) {
-                    event.setState(eventStateRepository.findByState(PUBLISHED.name()));
+                    event.setState(eventStateRepository.findByState(PUBLISHED));
                     event.setPublishedOn(publicationDate);
                 } else {
                     throw new ConflictException("Its not pending event.");
@@ -341,7 +342,7 @@ public class EventService {
                 if (Objects.equals(event.getState().getState(), PUBLISHED)) {
                     throw new ConflictException("Its already published.");
                 }
-                event.setState(eventStateRepository.findByState(CANCELED.name()));
+                event.setState(eventStateRepository.findByState(CANCELED));
             }
         }
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
