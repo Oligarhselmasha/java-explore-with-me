@@ -4,8 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.explorewithme.errorsHandling.ErrorResponse;
+
 import ru.practicum.explorewithme.exceptions.UnCorrectableException;
+import ru.practicum.explorewithme.stats.errorsHandling.ErrorResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
