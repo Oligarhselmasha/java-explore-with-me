@@ -2,10 +2,10 @@ package ru.practicum.explorewithme.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.explorewithme.entity.Category;
-import ru.practicum.explorewithme.entity.Event;
 import ru.practicum.explorewithme.dto.events.CategoryDto;
 import ru.practicum.explorewithme.dto.events.NewCategoryDto;
+import ru.practicum.explorewithme.entity.Category;
+import ru.practicum.explorewithme.entity.Event;
 import ru.practicum.explorewithme.exceptions.ConflictException;
 import ru.practicum.explorewithme.exceptions.MissingException;
 import ru.practicum.explorewithme.mapper.CategoryMapper;
@@ -53,6 +53,7 @@ public class CategoryService {
         Category category = categoryMapper.toCategory(newCategoryDto);
         return categoryMapper.toCategoryDto(categoryRepository.save(category));
     }
+
     public CategoryDto getCategorie(Long catId) {
         return categoryMapper.toCategoryDto(categoryRepository.findById(catId)
                 .orElseThrow(() -> new MissingException("Not found category")));
