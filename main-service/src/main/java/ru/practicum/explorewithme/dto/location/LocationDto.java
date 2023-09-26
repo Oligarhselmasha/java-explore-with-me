@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.location;
+package ru.practicum.explorewithme.dto.location;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

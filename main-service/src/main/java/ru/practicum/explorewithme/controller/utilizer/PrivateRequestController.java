@@ -2,10 +2,18 @@ package ru.practicum.explorewithme.controller.utilizer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.requests.EventRequestStatusUpdateRequest;
-import ru.practicum.explorewithme.requests.EventRequestStatusUpdateResult;
-import ru.practicum.explorewithme.requests.ParticipationRequestDto;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.explorewithme.dto.requests.EventRequestStatusUpdateRequest;
+import ru.practicum.explorewithme.dto.requests.EventRequestStatusUpdateResult;
+import ru.practicum.explorewithme.dto.requests.ParticipationRequestDto;
 import ru.practicum.explorewithme.service.RequestService;
 
 import javax.validation.Valid;
@@ -51,5 +59,4 @@ public class PrivateRequestController {
     ) {
         return requestService.cancelUsersRequests(userId, requestId);
     }
-
 }

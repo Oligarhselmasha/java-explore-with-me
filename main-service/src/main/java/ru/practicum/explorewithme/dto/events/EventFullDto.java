@@ -1,47 +1,57 @@
-package ru.practicum.explorewithme.events;
+package ru.practicum.explorewithme.dto.events;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.explorewithme.location.LocationDto;
+import ru.practicum.explorewithme.dto.location.LocationDto;
+import ru.practicum.explorewithme.dto.users.UserShortDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class NewEventDto {
+public class EventFullDto {
     @NotBlank
     @NotNull
-    @Size(min = 20, max = 2000)
     private String annotation;
 
     @NotNull
-    private Long category;
+    private CategoryDto category;
 
-    @NotBlank
-    @NotNull
-    @Size(min = 20, max = 7000)
+    private Long confirmedRequests;
+
+    private String createdOn;
+
     private String description;
 
     @NotBlank
     @NotNull
     private String eventDate;
 
+    private Long id;
+
+    @NotNull
+    private UserShortDto initiator;
+
     @NotNull
     private LocationDto location;
 
+    @NotNull
     private Boolean paid;
 
     private Integer participantLimit;
 
+    private String publishedOn;
+
     private Boolean requestModeration;
+
+    private String state;
 
     @NotBlank
     @NotNull
-    @Size(min = 3, max = 120)
     private String title;
 
+    private Long views;
 }

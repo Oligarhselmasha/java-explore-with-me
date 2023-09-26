@@ -19,11 +19,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "participation_requests")
+@Table(name = "Comments")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ParticipationRequest {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,15 +31,14 @@ public class ParticipationRequest {
     @Column
     private LocalDateTime created;
 
+    @Column
+    private String commentary;
+
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User requester;
-
-    @ManyToOne
-    @JoinColumn(name = "status_id")
-    private EventState status;
+    private User author;
 }

@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.explorewithme.events.CategoryDto;
-import ru.practicum.explorewithme.service.EventService;
+import ru.practicum.explorewithme.dto.events.CategoryDto;
+import ru.practicum.explorewithme.service.CategoryService;
 
 import java.util.List;
 
@@ -14,17 +14,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PublicCategoryController {
 
-    private final EventService eventService;
+    private final CategoryService categoryService;
 
 
     @GetMapping("/categories")
     public List<CategoryDto> getCategories(@RequestParam(defaultValue = "0") Integer from,
                                            @RequestParam(defaultValue = "10") Integer size) {
-        return eventService.getCategories(from, size);
+        return categoryService.getCategories(from, size);
     }
 
     @GetMapping("/categories/{catId}")
     public CategoryDto getCategory(@PathVariable("catId") Long catId) {
-        return eventService.getCategorie(catId);
+        return categoryService.getCategorie(catId);
     }
 }

@@ -1,26 +1,23 @@
-package ru.practicum.explorewithme.users;
+package ru.practicum.explorewithme.dto.comments;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserDto {
+public class UpdateCommentDto {
 
-    @NotBlank
     @NotNull
-    @Email
-    private String email;
-
     private Long id;
 
     @NotBlank
     @NotNull
-    private String name;
+    @Size(max = 2000)
+    private String comment;
 }

@@ -3,7 +3,7 @@ package ru.practicum.explorewithme.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.practicum.explorewithme.entity.ParticipationRequest;
-import ru.practicum.explorewithme.requests.ParticipationRequestDto;
+import ru.practicum.explorewithme.dto.requests.ParticipationRequestDto;
 
 import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
 

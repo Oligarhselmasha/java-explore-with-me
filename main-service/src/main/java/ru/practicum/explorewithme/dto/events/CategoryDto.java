@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.events;
+package ru.practicum.explorewithme.dto.events;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,10 @@
 package ru.practicum.explorewithme.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.entity.Event;
 import ru.practicum.explorewithme.variables.Status;
 
@@ -29,5 +31,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "where e.initiator.id in :ids and e.state.state in :states and e.category.id in :ids2 and e.eventDate > :eventDate and e.eventDate < :eventDate1 " +
             "order by e.id")
     List<Event> findByInitiator_IdInAndState_StateInAndCategory_NameInAndEventDateAfterAndEventDateBeforeOrderByIdAsc(@Param("ids") Collection<Long> ids, @Param("states") Collection<Status> states, @Param("ids2") Collection<Long> ids2, @Param("eventDate") LocalDateTime eventDate, @Param("eventDate1") LocalDateTime eventDate1);
+
+    @Transactional
+    @Modifying
+    @Query("update Event e set e.confirmedRequests = :confirmedRequests where e.id = :id")
+    int updateConfirmedRequestsById(@Param("confirmedRequests") Long confirmedRequests, @Param("id") Long id);
+
 
 }

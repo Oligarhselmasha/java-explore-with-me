@@ -1,10 +1,10 @@
-package ru.practicum.explorewithme.requests;
+package ru.practicum.explorewithme.dto.requests;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.explorewithme.events.CategoryDto;
-import ru.practicum.explorewithme.location.LocationDto;
+import ru.practicum.explorewithme.dto.events.CategoryDto;
+import ru.practicum.explorewithme.dto.location.LocationDto;
 
 import javax.validation.constraints.Size;
 

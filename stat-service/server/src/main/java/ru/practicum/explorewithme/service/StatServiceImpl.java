@@ -11,10 +11,16 @@ import ru.practicum.explorewithme.stats.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static ru.practicum.explorewithme.variables.Constants.DATE_PATTERN;
+import static variables.Constants.DATE_PATTERN;
+
 
 @Service
 @RequiredArgsConstructor

@@ -6,10 +6,13 @@ import ru.practicum.explorewithme.entity.User;
 import ru.practicum.explorewithme.exceptions.ConflictException;
 import ru.practicum.explorewithme.mapper.UserMapper;
 import ru.practicum.explorewithme.repository.UserRepository;
-import ru.practicum.explorewithme.users.NewUserRequest;
-import ru.practicum.explorewithme.users.UserDto;
+import ru.practicum.explorewithme.dto.users.NewUserRequest;
+import ru.practicum.explorewithme.dto.users.UserDto;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,22 +34,19 @@ public class UserService {
     }
 
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
-        List<UserDto> userDtos = new ArrayList<>();
-        Set<Long> usersIds = new HashSet<>();
-        if (ids != null) {
-            usersIds.addAll(ids);
+        if (ids == null || ids.isEmpty()) {
+            return userRepository.findAll().stream()
+                    .map(userMapper::toUserDto)
+                    .skip(from)
+                    .limit(size)
+                    .collect(Collectors.toList());
         } else {
-            Set<User> usersList = getSetUsers();
-            usersList.stream()
-                    .forEach(user -> usersIds.add(user.getId()));
+            return userRepository.findByIdIn(ids).stream()
+                    .map(userMapper::toUserDto)
+                    .skip(from)
+                    .limit(size)
+                    .collect(Collectors.toList());
         }
-        List<User> users = userRepository.findByIdIn(usersIds);
-        if (users.size() <= size) {
-            size = users.size();
-        }
-        users = new ArrayList<>(users).subList(from, size);
-        users.forEach(user -> userDtos.add(userMapper.toUserDto(user)));
-        return userDtos;
     }
 
     private Set<User> getSetUsers() {

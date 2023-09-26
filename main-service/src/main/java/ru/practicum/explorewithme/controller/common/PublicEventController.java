@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.explorewithme.events.EventFullDto;
-import ru.practicum.explorewithme.events.EventShortDto;
+import ru.practicum.explorewithme.dto.events.EventFullDto;
+import ru.practicum.explorewithme.dto.events.EventShortDto;
 import ru.practicum.explorewithme.service.EventService;
 
 import javax.servlet.http.HttpServletRequest;

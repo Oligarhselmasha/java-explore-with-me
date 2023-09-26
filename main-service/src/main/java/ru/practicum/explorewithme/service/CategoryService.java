@@ -4,9 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.entity.Category;
 import ru.practicum.explorewithme.entity.Event;
-import ru.practicum.explorewithme.events.CategoryDto;
-import ru.practicum.explorewithme.events.NewCategoryDto;
+import ru.practicum.explorewithme.dto.events.CategoryDto;
+import ru.practicum.explorewithme.dto.events.NewCategoryDto;
 import ru.practicum.explorewithme.exceptions.ConflictException;
+import ru.practicum.explorewithme.exceptions.MissingException;
 import ru.practicum.explorewithme.mapper.CategoryMapper;
 import ru.practicum.explorewithme.repository.CategoryRepository;
 import ru.practicum.explorewithme.repository.EventRepository;
@@ -52,6 +53,20 @@ public class CategoryService {
         Category category = categoryMapper.toCategory(newCategoryDto);
         return categoryMapper.toCategoryDto(categoryRepository.save(category));
     }
+    public CategoryDto getCategorie(Long catId) {
+        return categoryMapper.toCategoryDto(categoryRepository.findById(catId)
+                .orElseThrow(() -> new MissingException("Not found category")));
+    }
+
+    public List<CategoryDto> getCategories(Integer from, Integer size) {
+
+        return categoryRepository.findAll().stream()
+                .map(categoryMapper::toCategoryDto)
+                .skip(from)
+                .limit(size)
+                .collect(Collectors.toList());
+    }
+
 
     private Set<String> getSetNames() {
         return categoryRepository.findAll().stream()

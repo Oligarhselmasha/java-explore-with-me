@@ -6,7 +6,7 @@ drop table  IF EXISTS Compilation CASCADE;
 drop table  IF EXISTS Events CASCADE;
 drop table  IF EXISTS Compilation_events CASCADE;
 drop table  IF EXISTS participation_requests CASCADE;
-
+drop table  IF EXISTS Comments CASCADE;
 
 CREATE TABLE IF NOT EXISTS Category
 ( id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
@@ -85,4 +85,14 @@ CREATE TABLE IF NOT EXISTS participation_requests
 CONSTRAINT fk_events_to_participation_requests FOREIGN KEY(event_id) REFERENCES Events (id),
 CONSTRAINT fk_users_to_participation_requests FOREIGN KEY(user_id) REFERENCES Users(id),
 CONSTRAINT fk_status_to_participation_requests FOREIGN KEY(status_id) REFERENCES Event_state(id)
+);
+
+CREATE TABLE IF NOT EXISTS Comments
+( id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+, created timestamp
+, event_id bigint
+, user_id bigint
+, commentary  varchar(2000),
+CONSTRAINT fk_events_to_comments FOREIGN KEY(event_id) REFERENCES Events (id),
+CONSTRAINT fk_users_to_comments FOREIGN KEY(user_id) REFERENCES Users(id)
 );

@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.users;
+package ru.practicum.explorewithme.dto.events;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -6,15 +6,22 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserShortDto {
+public class CompilationDto {
+
+    private List<EventShortDto> events;
+
     @NotNull
     private Long id;
 
-    @NotBlank
     @NotNull
-    private String name;
+    private Boolean pinned;
+
+    @NotNull
+    @NotBlank
+    private String title;
 }

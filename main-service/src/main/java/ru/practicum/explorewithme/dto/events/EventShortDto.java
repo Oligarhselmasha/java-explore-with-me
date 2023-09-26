@@ -1,9 +1,9 @@
-package ru.practicum.explorewithme.events;
+package ru.practicum.explorewithme.dto.events;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.explorewithme.users.UserShortDto;
+import ru.practicum.explorewithme.dto.users.UserShortDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

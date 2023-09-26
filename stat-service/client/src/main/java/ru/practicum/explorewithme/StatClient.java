@@ -12,7 +12,9 @@ import ru.practicum.explorewithme.stats.EndpointHitDto;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import static ru.practicum.explorewithme.variables.Constants.*;
+import static variables.Constants.DATE_PATTERN;
+import static variables.Constants.MAX_DATE;
+import static variables.Constants.MIN_DATE;
 
 
 @Service
