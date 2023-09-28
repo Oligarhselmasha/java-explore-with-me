@@ -1,10 +1,16 @@
 package ru.practicum.explorewithme.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.EndpointHitDto;
-import ru.practicum.explorewithme.ViewStatsDto;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.explorewithme.service.StatService;
+import ru.practicum.explorewithme.stats.EndpointHitDto;
+import ru.practicum.explorewithme.stats.ViewStatsDto;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -24,6 +30,7 @@ public class StatController {
     }
 
     @PostMapping("/hit")
+    @ResponseStatus(HttpStatus.CREATED)
     public EndpointHitDto createHit(@Valid @RequestBody EndpointHitDto endpointHitDto) {
         return statService.createHit(endpointHitDto);
     }

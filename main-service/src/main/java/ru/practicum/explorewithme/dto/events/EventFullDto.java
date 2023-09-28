@@ -1,8 +1,10 @@
-package ru.practicum.explorewithme;
+package ru.practicum.explorewithme.dto.events;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.explorewithme.dto.location.LocationDto;
+import ru.practicum.explorewithme.dto.users.UserShortDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -34,12 +36,12 @@ public class EventFullDto {
     private UserShortDto initiator;
 
     @NotNull
-    private Location location;
+    private LocationDto location;
 
     @NotNull
     private Boolean paid;
 
-    private Integer participantLimit = 0;
+    private Integer participantLimit;
 
     private String publishedOn;
 

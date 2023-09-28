@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme;
+package ru.practicum.explorewithme.stats;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +20,4 @@ public class ViewStatsDto {
         this.app = api;
         this.uri = uri;
     }
-
-
 }

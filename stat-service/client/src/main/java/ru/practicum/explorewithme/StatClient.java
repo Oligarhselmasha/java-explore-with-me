@@ -7,23 +7,42 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+import ru.practicum.explorewithme.stats.EndpointHitDto;
+
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+import static variables.Constants.DATE_PATTERN;
+import static variables.Constants.MAX_DATE;
+import static variables.Constants.MIN_DATE;
+
 
 @Service
 public class StatClient extends BaseClient {
 
-    private static final String API_PREFIX = "/hit";
 
     @Autowired
-    public StatClient(@Value("${stat-client.url}") String serverUrl, RestTemplateBuilder builder) {
+    public StatClient(@Value("${client.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl + API_PREFIX))
+                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                         .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                         .build()
         );
     }
 
     public ResponseEntity<Object> createHit(EndpointHitDto endpointHitDto) {
-        return post("/", endpointHitDto);
+        return post("/hit/", endpointHitDto);
+    }
+
+    public ResponseEntity<Object> getStats(Long id) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(DATE_PATTERN);
+        Map<String, Object> parameters = Map.of(
+                "start", df.format(MIN_DATE),
+                "end", df.format(MAX_DATE),
+                "uris", "/events/" + id,
+                "unique", true
+        );
+        return get("/stats?end={end}&start={start}&uris={uris}&unique={unique}", parameters);
     }
 }
