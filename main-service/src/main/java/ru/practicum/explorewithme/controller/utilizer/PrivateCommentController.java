@@ -56,9 +56,4 @@ public class PrivateCommentController {
                                                  @RequestParam(defaultValue = "10", required = false) Integer size) {
         return commentService.getUsersComments(userId, from, size);
     }
-
-    @GetMapping("/comments/{commentId}")
-    public CommentFullDto getUsersComment(@PathVariable("commentId") Long commentId) {
-        return commentService.getUsersComment(commentId);
-    }
 }
