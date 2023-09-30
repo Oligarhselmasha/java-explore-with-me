@@ -30,6 +30,7 @@ public class AdminCommentController {
     public void removeComment(@PathVariable("commentId") Long commentId) {
         commentService.removeCommentByAdmin(commentId);
     }
+
     @DeleteMapping("/comments")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeAllComment() {
