@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static ru.practicum.explorewithme.variables.Status.PUBLISHED;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -48,42 +50,60 @@ public class CommentService {
     public CommentFullDto postNewUsersComment(Long userId, Long eventId, ShortCommentDto newCommentDto) {
         User author = userRepository.findById(userId).orElseThrow();
         Event event = eventRepository.findById(eventId).orElseThrow();
-        if (!Objects.equals(event.getInitiator().getId(), userId)) {
-            throw new UnCorrectableException("User isn't owner this event");
+        if (!Objects.equals(event.getInitiator().getId(), userId) && event.getState().getState() != PUBLISHED) {
+            throw new UnCorrectableException("It is impossible for a non-owner to leave a comment on an unpublished" +
+                    " event");
         }
         Comment comment = commentMapper.toComment(newCommentDto);
         comment.setEvent(event);
         comment.setAuthor(author);
         comment.setCreated(LocalDateTime.now());
-        Comment commentSaved = commentRepository.save(comment);
-        return commentMapper.toCommentFullDto(commentSaved);
+        return makeFullDto(commentRepository.save(comment), userId);
     }
 
     public CommentFullDto changeUsersComment(Long userId, UpdateCommentDto changeCommentDto) {
         Comment comment = commentRepository.findById(changeCommentDto.getId())
                 .orElseThrow(() -> new MissingException("Not found comment"));
         if (!Objects.equals(comment.getAuthor().getId(), userId)) {
-            throw new UnCorrectableException("User isn't owner this event");
+            throw new UnCorrectableException("User isn't owner this comment");
         }
-        comment.setCommentary(changeCommentDto.getComment());
-        Comment commentSaved = commentRepository.save(comment);
-        return commentMapper.toCommentFullDto(commentSaved);
+        comment.setCommentary(changeCommentDto.getCommentary());
+        return makeFullDto(commentRepository.save(comment), userId);
     }
 
     public List<CommentFullDto> getUsersComments(Long userId, Integer from, Integer size) {
         List<Comment> comments = commentRepository.findByAuthor_IdOrderByCreatedDesc(userId);
         return comments.stream()
-                .map(commentMapper::toCommentFullDto)
+                .map(comment -> makeFullDto(comment, userId))
                 .skip(from)
                 .limit(size)
                 .collect(Collectors.toList());
     }
 
-    public CommentFullDto getUsersComment(Long commentId) {
+    public CommentFullDto changeUsersCommentByAdmin(UpdateCommentDto changeCommentDto) {
+        Comment comment = commentRepository.findById(changeCommentDto.getId())
+                .orElseThrow(() -> new MissingException("Not found comment"));
+        comment.setCommentary(changeCommentDto.getCommentary());
+        return makeFullDto(commentRepository.save(comment), comment.getAuthor().getId());
+    }
+
+    public List<CommentFullDto> getAllComments(Integer from, Integer size) {
         List<Comment> comments = commentRepository.findAll();
-        comments = comments.stream()
-                .filter(comment -> Objects.equals(comment.getId(), commentId))
+        return comments.stream()
+                .map(comment -> makeFullDto(comment, comment.getAuthor().getId()))
+                .skip(from)
+                .limit(size)
                 .collect(Collectors.toList());
-        return commentMapper.toCommentFullDto(comments.get(0));
+    }
+
+    public void removeAllCommentByAdmin() {
+        commentRepository.deleteAll();
+    }
+
+    private CommentFullDto makeFullDto(Comment comment, Long userId) {
+        CommentFullDto commentFullDto = commentMapper.toCommentFullDto(comment);
+        commentFullDto.setEvent(comment.getEvent().getId());
+        commentFullDto.setAuthor(userId);
+        return commentFullDto;
     }
 }

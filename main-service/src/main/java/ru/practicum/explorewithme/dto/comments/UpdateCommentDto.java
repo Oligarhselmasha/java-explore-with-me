@@ -19,5 +19,5 @@ public class UpdateCommentDto {
     @NotBlank
     @NotNull
     @Size(max = 2000)
-    private String comment;
+    private String commentary;
 }

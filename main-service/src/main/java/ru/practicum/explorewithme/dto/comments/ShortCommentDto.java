@@ -16,5 +16,5 @@ public class ShortCommentDto {
     @NotBlank
     @NotNull
     @Size(max = 2000)
-    private String comment;
+    private String commentary;
 }
